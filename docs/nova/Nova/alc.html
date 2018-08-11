@@ -1,0 +1,317 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 3.0//EN">
+<HTML>
+<HEAD>
+<TITLE>Nova Arithmetic/Logic Instructions</TITLE>
+<LINK REV=MADE HREF="mailto:carl.friend@rcsri.org">
+<BASE HREF="">
+<META http-equiv="PICS-Label" content='(PICS-1.0 "http://www.rsac.org/ratingsv01.html" l gen true comment "RSACi North America Server" by "carl.friend@rcsri.org" for "http://www.ultranet.com/~engelbrt/carl/museum/" on "1996.04.04T08:15-0500" exp "1997.07.01T08:15-0500" r (n 0 s 0 v 0 l 2))'>
+<LINK REL="stylesheet" HREF="http://users.rcn.com/crfriend/museum/crf.css" type="text/css">
+<META NAME="ROBOTS" CONTENT="NOINDEX, NOFOLLOW">
+</HEAD>
+
+<BODY>
+<IMG src="http://users.rcn.com/crfriend/museum/images/cbar3.gif" alt="" width=543 height=4><P></P>
+<H1>Data General NOVA &reg;<BR>Arithmetic/Logic Instructions</H1><P></P>
+<IMG src="http://users.rcn.com/crfriend/museum/images/cbar3.gif" alt="" width=543 height=4><P></P>
+<P>&nbsp;&nbsp;&nbsp
+This page describes the Arithmetic and Logic class of instructions in the
+Nova set. Other pages describe:
+<UL>
+<LI><A HREF="index.html">Architecture Overview</A>
+<LI><A HREF="PL.html">NOVA Program Load Example</A><P>
+<LI><A HREF="mri.html">Memory Reference Instructions</A>
+<LI><A HREF="io.html">Input/Output Instructions</A>
+</UL>
+<HR>
+<P>&nbsp;&nbsp;&nbsp
+The ALC (Arithemtical/Logical Class) in the NOVA is used to perform all
+operations requiring the use of arithmetic or logical manipulation of
+bit-fields. All instructions in this class involve two accumulators (ACs)
+and the Carry bit. Memory is never referenced, save for the instruction
+fetch.  All the instructions in this class have a common format:
+<PRE>
+              Destination            Shift             No
+     1        Accumulator           Control           Load
+   /   \       /       \           /       \         /    \
+   +---+---+---+---+---+---+---+---+---+---+----+----+----+----+----+----+
+   | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 |
+   +---+---+---+---+---+---+---+---+---+---+----+----+----+----+----+----+
+       \       /       \           /       \         /    \              /
+         Source           Function            Carry             Skip        
+       Accumulator                           Control           Control
+
+</PRE>
+<P>&nbsp;&nbsp;&nbsp
+Beyond the base function, specified by the "Function" bit-field above, the
+machine may be instructed to perform other operations both before and
+after the function is executed.
+<P>&nbsp;&nbsp;&nbsp
+Bit zero in the Arithmetic/Logic class is always a one. This distunguishes
+the class from the I/O and MRI classes.
+<P>&nbsp;&nbsp;&nbsp
+The two ACs which are to participate in the operation are specified by
+the "Source AC" and "Destination AC" with the Destination AC being the
+one which (optionally) receives the result of the operation. The Source
+and Destination specifiers may refer to the same accumulator.
+<P>&nbsp;&nbsp;&nbsp
+The "Function" field specifies the basic operation to be performed; there
+are eight possible operations, each with their own unique OPcode which
+will be discussed below.
+<P>&nbsp;&nbsp;&nbsp
+Before the operation is executed, the programmer has the option of
+initialising the Carry bit to some known value, flipping its
+current state, or leaving it alone. This is specified in the "Carry
+Control" field by appending "Z", "O", or "C" to the basic OPcode. The
+default action is to leave Carry untouched. The possibilities are:
+<UL>
+<LI>00 - leave Carry in its current state -
+<LI>01 - force Carry to a zero before executing <EM>Function</EM> - "Z"
+<LI>10 - force Carry to a one before executing <EM>Function</EM> - "O"
+<LI>11 - complement (invert) Carry before executing <EM>Function</EM> - "C"
+</UL>
+<P>&nbsp;&nbsp;&nbsp
+After <EM>Function</EM> is performed, the programmer may specify that
+the result be shifted either right or left by one bit- position or that
+the halves of the word be swapped. These options are specified in the
+"Shift Control" field by coding a "L", "R", or "S" in the OPcode. The
+two shift operations function as rotates and involve the Carry bit. The
+values of the field, and their functions are:
+<UL>
+<LI>00 - perform no shift or swap - ""
+<LI>01 - rotate the result of <EM>Function</EM> left by one bit - "L"
+<LI>10 - rotate the result of <EM>Function</EM> right by one bit - "R"
+<LI>11 - swap the two halves of the result of <EM>Function</EM> - "S"
+</UL>
+<P>&nbsp;&nbsp;&nbsp
+Optionally, it is possible to discard the results of <EM>Function</EM>. This
+is useful if it desireable to merely test the outcome of an operation but
+the result need not be saved. This is usually used in conjunction with
+the <EM>Skip</EM> field, discussed next. Bit 12, the "No-Load" bit, is
+set by the programmer by adding a "#" to the OPcode.
+<P>&nbsp;&nbsp;&nbsp
+Finally, a decision may be made to skip the next instruction in the
+sequence, or not, based on the result of <EM>Function</EM>. Skips are
+coded by the programmer by appending a ",Skip-OP" following the Destination
+AC. The possible skips are:
+<UL>
+<LI>000 - Never skip - ""
+<LI>001 - Always skip - ",SKP"
+<LI>010 - Skip if Carry equals zero - ",SZC"
+<LI>011 - Skip if Carry is non-zero - ",SNC"
+<LI>100 - Skip if the result of <EM>Function</EM> is zero - ",SZR"
+<LI>101 - Skip if the result of <EM>Function</EM> is non-zero - ",SNR"
+<LI>110 - Skip if either Carry or result are zero (or both) - ",SEZ"
+<LI>111 - Skip if <EM>both</EM> carry and result are non-zero - ",SBN"
+</UL>
+<P>&nbsp;&nbsp;&nbsp
+NOTE: In coding for the Nova, it is vitally important that the "No-Load" and
+"Never Skip" options are never coded together. This bit configuration is
+used by later Novas and the Eclipse line to implement extended instructions.
+<P>&nbsp;&nbsp;&nbsp
+Each of the ALC instructions will now be discussed in turn by their
+respective functions.
+<P><HR ALIGN=LEFT>
+<H2>The Instructions</H2>
+<P><A NAME="ADD"><HR WIDTH="25%" ALIGN=LEFT></A>
+<H3>Add (ADD)</H3>
+<DL>
+Function code bits: 110<BR>
+<DT>Function:
+<DD>&nbsp;&nbsp;&nbsp;The <STRONG>ADD</STRONG> instruction arithmetically
+adds the contents of the Source AC to the Destination AC and places the
+result in the Destination AC. If a carry is propagated from bit zero the
+Carry bit is inverted. The original contents of the Destination AC and Carry
+are lost if the No-Load option is not set. The contents of the Source
+AC are not altered.
+<P>
+<DT>Assembler Syntax:
+<DD>ADD[O|Z|C][L|R|S][#]&nbsp;&nbsp;&nbsp; ACS, ACD[, Skip-op]
+<P>
+<DT>Example:
+<DD><PRE>
+Start:    AC0=2, AC1=2, C=0, PC=452
+Function: ADD 0, 1, SNR
+Finish:   AC0=2, AC1=4, C=0, PC=454
+</PRE>
+</DL>
+<P><A NAME="ADC"><HR WIDTH="25%" ALIGN=LEFT></A>
+<H3>Add Complement (ADC)</H3>
+<DL>
+Function code bits: 100<BR>
+<DT>Function:
+<DD>&nbsp;&nbsp;&nbsp;The <STRONG>ADC</STRONG> instruction arithmetically
+adds the one's complement of the Source AC to the Destination AC and places
+the result in the Destination AC. If the addition causes a carry to
+be propagated from bit zero, or if the contents of the Source AC is less
+than the contents of the Destination AC, the carry bit is inverted. The
+original contents of the Destination AC and Carry are lost if the "No-Load"
+option is not set. The contents of the Source AC are not altered.
+<P>
+<DT>Assembler Syntax:
+<DD>ADC[O|Z|C][L|R|S][#]&nbsp;&nbsp;&nbsp; ACS, ACD[, Skip-op]
+<P>
+<DT>Example:
+<DD><PRE>
+Start:    AC0=10, AC1=45, C=0, PC=553
+Function: ADC 0, 1, SZC
+Finish:   AC0=10, AC1=34, C=1, PC=554
+</PRE>
+</DL>
+<P><A NAME="AND"><HR WIDTH="25%" ALIGN=LEFT></A>
+<H3>Logical AND (AND)</H3>
+<DL>
+Function code bits: 111<BR>
+<DT>Function:
+<DD>&nbsp;&nbsp;&nbsp;The <STRONG>AND</STRONG> instruction performs a
+logical AND on the contents of the Source AC and the Destination AC and
+places the result in the Destination AC. Carry does not participate in the
+operation unless a rotate operation is also specified. The original
+contents of the Destination AC are lost unless the "No-Load" bit is
+set. The Source AC is unaffected.
+<P>
+<DT>Assembler Syntax:
+<DD>AND[O|Z|C][L|R|S][#]&nbsp;&nbsp;&nbsp; ACS, ACD[, Skip-op]
+<P>
+<DT>Example:
+<DD><PRE>
+Start:    AC0=123456 (1010011100101110), AC1=377 (0000000011111111), C=1
+Function: ANDZ 0, 1
+Finish:   AC0=123456 (1010011100101110), AC1=56  (0000000000101110), C=0
+</PRE>
+</DL>
+<P><A NAME="COM"><HR WIDTH="25%" ALIGN=LEFT></A>
+<H3>Complement (COM)</H3>
+<DL>
+Function code bits: 000<BR>
+<DT>Function:
+<DD>&nbsp;&nbsp;&nbsp;The <STRONG>COM</STRONG> operation forms the one's
+complement of the Source AC (by inverting it) and places the result into
+the Destiantion AC. Carry is unaffected unless a rotation operation is
+also specified. The original contents of the Destination AC are lost
+unless the "No-Load" bit is set. The Source AC is unaffected.
+<P>
+<DT>Assembler Syntax:
+<DD>COM[O|Z|C][L|R|S][#]&nbsp;&nbsp;&nbsp; ACS, ACD[, Skip-op]
+<P>
+<DT>Example:
+<DD><PRE>
+Start:    AC2=10, AC3=20, C=0, PC=1534
+Function: COM 2, 3, SKP
+Finish:   AC2=10, AC3=177767, C=0, PC=1536
+</PRE>
+</DL>
+<P><A NAME="INC"><HR WIDTH="25%" ALIGN=LEFT></A>
+<H3>Increment (INC)</H3>
+<DL>
+Function code bits: 011<BR>
+<DT>Function:
+<DD>&nbsp;&nbsp;&nbsp;The <STRONG>INC</STRONG> operation increments
+the contents of the Source AC by one and places the result into the
+Destination AC. If a carry is forced from bit zero by the operation, the
+Carry bit is complemented. The original contents of the Destination AC
+and Carry are lost unless the "No-Load" bit is set. The Source AC is
+not altered.
+<P>
+<DT>Assembler Syntax:
+<DD>INC[O|Z|C][L|R|S][#]&nbsp;&nbsp;&nbsp; ACS, ACD[, Skip-op]
+<P>
+<DT>Example:
+<DD><PRE>
+Start:    AC1=10, AC2=20, C=0, PC=376
+Function: INC 2, 1, SEZ
+Finish:   AC1=21, AC2=20, C=0, PC=1000
+</PRE>
+</DL>
+<P><A NAME="MOV"><HR WIDTH="25%" ALIGN=LEFT></A>
+<H3>Move (MOV)</H3>
+<DL>
+Function code bits: 010<BR>
+<DT>Function:
+<DD>&nbsp;&nbsp;&nbsp;The <STRONG>MOV</STRONG> operation moves the
+contents of the Source AC to the Destination AC. The Carry bit does not
+participate in the operation unless one of the rotate options is set. The
+original contents of the Destination AC are lost unless the "No-Load" bit
+is set.
+<P>
+<DT>Assembler Syntax:
+<DD>MOV[O|Z|C][L|R|S][#]&nbsp;&nbsp;&nbsp; ACS, ACD[, Skip-op]
+<P>
+<DT>Example:
+<DD><PRE>
+Start:    AC0=150, AC3=20, C=0, PC=3021
+Function: MOVS 0, 3, SNR
+Finish:   AC0=150, AC3=6400, C=0, PC=3023
+</PRE>
+</DL>
+<P><A NAME="NEG"><HR WIDTH="25%" ALIGN=LEFT></A>
+<H3>Negate (NEG)</H3>
+<DL>
+Function code bits: 001<BR>
+<DT>Function:
+<DD>&nbsp;&nbsp;&nbsp;The <STRONG>NEG</STRONG> operation takes the two's
+complement of the contents of the Source AC and places it in the
+Destination AC. The original contents of the Destination AC and Carry are
+lost unless the "No-Load" bit is set. The Source AC is unaffected.
+<P>
+<DT>Assembler Syntax:
+<DD>NEG[O|Z|C][L|R|S][#]&nbsp;&nbsp;&nbsp; ACS, ACD[, Skip-op]
+<P>
+<DT>Example:
+<DD><PRE>
+Start:    AC2=150, AC1=20, C=0, PC=5571
+Function: NEG 2, 1, SZR
+Finish:   AC2=150, AC1=177630, C=0, PC=5572
+</PRE>
+</DL>
+<P><A NAME="SUB"><HR WIDTH="25%" ALIGN=LEFT></A>
+<H3>Subtract (SUB)</H3>
+<DL>
+Function code bits: 101<BR>
+<DT>Function:
+<DD>&nbsp;&nbsp;&nbsp;The <STRONG>SUB</STRONG> operation arithmetically
+subtracts the contents of the Source AC from the contents of the
+Destination AC and places the result in the Destination AC. Both operands
+are unsigned. If the value in the Source AC is less than, or equal to, the
+value in the Destination AC the Carry bit is inverted. The contents of the
+Destination AC and Carry are lost unless the "No-Load" bit is set.
+<P>
+&nbsp;&nbsp;&nbsp;The operation "SUBO AC, AC" is useful for zeroing both an
+AC and carry at the same time.
+<P>
+<DT>Assembler Syntax:
+<DD>SUB[O|Z|C][L|R|S][#]&nbsp;&nbsp;&nbsp; ACS, ACD[, Skip-op]
+<P>
+<DT>Example:
+<DD><PRE>
+Start:    AC1=725, AC2=1042, C=0, PC=7024
+Function: SUB 1, 2, SZC
+Finish:   AC1=725, AC2=115, C=1, PC=7025
+</PRE>
+</DL>
+<P><HR ALIGN=LEFT>
+<P>&nbsp;&nbsp;&nbsp
+This page described the arithemetical and logical instructions of the
+Data General Nova minicomputer. Other pages describe:
+<UL>
+<LI><A HREF="index.html">Architecture Overview</A>
+<LI><A HREF="PL.html">NOVA Program Load Example</A><P>
+<LI><A HREF="mri.html">Memory Reference Instructions</A>
+<LI><A HREF="io.html">Input/Output Instructions</A>
+</UL>
+<BR><IMG src="http://users.rcn.com/crfriend/museum/images/cbar3.gif" alt="" width=100% height="4">
+<HR>
+<CENTER>
+[ <A HREF="http://users.rcn.com/crfriend/museum/index.shtml">Museum Lobby</A> <IMG src="http://users.rcn.com/crfriend/museum/QB/text.gif" alt="" width=9 height=11> ]
+[ <A HREF="http://users.rcn.com/crfriend/museum/inven.shtml">Museum Catalogue</A> <IMG src="http://users.rcn.com/crfriend/museum/QB/text.gif" alt="" width=9 height=11> ]
+[ <A HREF="http://users.rcn.com/crfriend/">Carl's Homepage</A> <IMG src="http://users.rcn.com/crfriend/museum/QB/homepage.gif" alt="" width=14 height=12> ]
+</CENTER>
+<HR><BR>
+<CITE>Copyright &#169; 1998 - 2003, Carl R. Friend. </CITE>All rights reserved.<BR>
+<BR><ADDRESS>Comments to:
+<A HREF="mailto:carl.friend@rcsri.org">carl.friend@rcsri.org</A>
+<IMG src="http://users.rcn.com/crfriend/museum/QB/mailto.gif" alt="" width=14 height=10>
+</ADDRESS>
+Last Modified: Sun Sep 13 11:35:43 EDT 1998
+</BODY>
+</HTML>
+

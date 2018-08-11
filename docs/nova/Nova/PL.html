@@ -1,0 +1,146 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 3.0//EN">
+<HTML>
+<HEAD>
+<TITLE>DG Nova Boot Program Listing</TITLE>
+<LINK REV=MADE HREF="mailto:carl.friend@rcsri.org">
+<BASE HREF="">
+<LINK REL="stylesheet" HREF="http://users.rcn.com/crfriend/museum/crf.css" type="text/css">
+</HEAD>
+<BODY>
+<IMG src="http://users.rcn.com/crfriend/museum/images/cbar3.gif" alt="" width=543 height=4>
+<H1>Data General Nova<BR>Program Load Listing</H1>
+<IMG src="http://users.rcn.com/crfriend/museum/images/cbar3.gif" alt="" width=543 height=4>
+<P>&nbsp;&nbsp;&nbsp
+This document is a listing of a hand- disassembled version of the program
+which is loaded into core memory from a small ROM when the "program load"
+switch is activated on the computer's front panel. I got this code by
+hitting the load switch on one of my Novas with the data switches set
+to zero, disassembling the resulting data that showed up in the low
+32 words of memory, and feeding the hand- disassembly back through the
+Nova's Extended Assembler to produce the listing shown here.</P>
+<P>&nbsp;&nbsp;&nbsp
+It's self-modifying code, explaining why it has to run from main memory
+rather than having the ROM mapped temporarily into the main address space.
+The self- modification is used to set up the device addresses in the I/O
+instructions.</P>
+<P>&nbsp;&nbsp;&nbsp
+I've commented it for clarity. All the numbers are in octal notation, which
+DG opted to use for the Nova instead of hexidecimal. Perhaps the octal
+notation is part of the designer's DEC heritage showing through.</P>
+<P>&nbsp;&nbsp;&nbsp
+In any event, here it is:</P>
+<HR>
+<PRE>
+               		.TITL	BOOT
+         000000 	.LOC	0
+               	
+   00000 062677 START:	IORST			; Reset I/O Bus
+   00001 060477 	READS	0		; Get switches to AC0
+   00002 024026 	LDA	1, DVMSK	; Load Device Mask into AC1
+   00003 107400 	AND	0, 1		; Mask off Device Bits
+   00004 124000 	COM	1, 1		; Form Negative of AC1
+
+               	;  The code fragment from 5 to 11 forms the nucleus of the
+               	; self-modification portion of the program load program. The
+               	; device ID from the switches is complemented and incremented
+               	; in a counter 'til it overflows (goes to 0). The various
+               	; I/O instructions are incremented to the desired device ID
+               	; in said loop.
+
+   00005 010014 IOSLP:	ISZ	IOI1		; INC NIOS Instr at 14
+   00006 010030 	ISZ	IOI2		; INC SKPDN Instr at 30
+   00007 010032 	ISZ	IOI3		; INC DIAS Instr at 32
+   00010 125404 	INC	1, 1, SZR	; If loop done, skip - else 5
+   00011 000005 	JMP	IOSLP		; Loop back
+
+               	;    At this point, all the I/O instruction lower 6 bits
+               	; contain the correct device ID (from the switches) and we
+               	; can begin the actual boot process. First we load a JMP 377
+               	; from location 16 and store it into location 377. This sets
+               	; up the logic for a Data CHannel device load.
+
+   00012 030016 	LDA	2, SJMP		; Load self-jump
+   00013 050377 	STA	2, 377		; Save at 377
+   00014 060077 IOI1:	060077			; ((NIOS 0) -1) <A HREF="PL.html#n1">[1]</A>
+   00015 101102 	MOVL	0, 0, SZC	; Test for DCH device in SWS
+   00016 000377 SJMP:	JMP	377		; Jump + wait for DCH device
+
+               	;    The previous JMP 377 is called only if we're loading from
+               	; a data channel device (i.e. switch 0 was up). The program
+		; will loop endlessly at 377 until that location is
+		; overwritten by data from the device (it loads 400 octal
+		; words). Location 377, once overwritten, becomes the
+		; start point for the newly-loaded program.
+
+   00017 004030 LEADR:	JSR	GETCH		; Get a character
+   00020 101065 	MOVC	0, 0, SNR	; Test for NULL
+   00021 000017 	JMP	LEADR		; Ignore initial NULLs
+   00022 004027 NXTWRD:	JSR	GPACK		; Get, and pack, bytes
+   00023 046026 	STA	1, @CURLC	; Save new word thru 26
+   00024 010100 	ISZ	100		; Bump word count (from device)
+   00025 000022 	JMP	NXTWRD		; Get next word
+
+               	;    Location 26 is an auto-increment location when accessed
+               	; via an indirect (deferred) access. The initial value of 77
+               	; will autoincrement to 100 during the first access from
+               	; the instruction at location 23. It also serves, at time of
+               	; initialisation as the mask for the device bits in the console
+               	; switches. At the end of this program, location 26 will
+		; contain the entry address of the program just loaded.
+
+		DVMSK:	
+   00026 000077 CURLC:	77
+
+               	;    Beginning at location 27 is the routine to get bytes from
+               	; the selected input device and pack them into words for later
+               	; storage. Remember we're dealing with a big-endian macine
+               	; here. The routine has two entry points, GPACK and GETCH.
+                ; GPACK gets, and packs bytes two per word; GETCH gets, and
+                ; returns a single character in the low-order 8 bits.
+
+   00027 126420 GPACK:	SUBZ	1, 1		; Clear AC1 and set carry
+
+               	GETCH:
+               	IOLP1:
+   00030 063577 IOI2:	063577			; ((SKPDN 0) -1) <A HREF="PL.html#n1">[1]</A>
+   00031 000030 	JMP	IOLP1		; Dev Not Done - Loop
+   00032 060477 IOI3:	060477			; ((DIAS 0, 0) -1) <A HREF="PL.html#n1">[1]</A>
+   00033 107363 	ADDCS	0, 1, SNC	; Pack data from dev into AC1
+   00034 000030 	JMP	IOLP1		; Word not done - get next char
+   00035 125300 	MOVS	1, 1		; Word done - swap bytes back
+   00036 001400 	JMP	0, 3		; Return from JSR
+
+   00037 000000 FILLR:	0
+
+         000000 	.END	START
+</PRE>
+<A NAME="n1"><HR></A>
+<DL>
+<DT>[1]</DT>
+<DD>The three instructions at IOI1:, IOI2:, and IOI3: are stored in the ROM one
+less than their intended instructions. This is due to the workings of
+the self- modification loop which tests for done at the bottom of the
+loop. It looks like magic, but it's really not.</DD>
+</DL>
+<P>&nbsp;&nbsp;&nbsp
+Note that the tactic of using device ID 0 to get this information won't
+work on an <A HREF="http://users.rcn.com/crfriend/museum/machines/EclipseS130.html">Eclipse S/130</A>. On that
+system, a program load from device zero is a special case which starts a
+self- test in the microcode.</P>
+<BR><IMG src="http://users.rcn.com/crfriend/museum/images/cbar3.gif" alt="" width=100% height="4">
+<HR>
+<CENTER>
+[ <A HREF="http://users.rcn.com/crfriend/museum/index.shtml">Museum Lobby</A> <IMG src="http://users.rcn.com/crfriend/museum/QB/text.gif" alt="" width=9 height=11> ]
+[ <A HREF="http://users.rcn.com/crfriend/museum/inven.shtml">Museum Catalogue</A> <IMG src="http://users.rcn.com/crfriend/museum/QB/text.gif" alt="" width=9 height=11> ]
+[ <A HREF="http://users.rcn.com/crfriend/">Carl's Homepage</A> <IMG src="http://users.rcn.com/crfriend/museum/QB/homepage.gif" alt="" width=14 height=12> ]
+</CENTER>
+<HR><BR>
+<CITE>Copyright &#169; 1997 - 2003, Carl R. Friend. </CITE>All rights reserved.<BR>
+Webspace design by: Carbon & Silicon Alliance<BR>
+<BR><ADDRESS>Comments to:
+<A HREF="mailto:carl.friend@rcsri.org">carl.friend@rcsri.org</A>
+<IMG src="http://users.rcn.com/crfriend/museum/QB/mailto.gif" alt="" width=14 height=10>
+</ADDRESS>
+Last Modified: Sun Jul  5 11:00:29 EDT 1998
+</BODY>
+</HTML>

@@ -1,0 +1,218 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 3.0//EN">
+<HTML>
+<HEAD>
+<TITLE>Nova CPU Control Instructions</TITLE>
+<LINK REV=MADE HREF="mailto:carl.friend@rcsri.org">
+<BASE HREF="">
+<META http-equiv="PICS-Label" content='(PICS-1.0 "http://www.rsac.org/ratingsv01.html" l gen true comment "RSACi North America Server" by "carl.friend@rcsri.org" for "http://www.ultranet.com/~engelbrt/carl/museum/" on "1996.04.04T08:15-0500" exp "1997.07.01T08:15-0500" r (n 0 s 0 v 0 l 2))'>
+<LINK REL="stylesheet" HREF="http://users.rcn.com/crfriend/museum/crf.css" type="text/css">
+<META NAME="ROBOTS" CONTENT="NOINDEX, NOFOLLOW">
+</HEAD>
+
+<BODY>
+<IMG src="http://users.rcn.com/crfriend/museum/images/cbar3.gif" alt="" width=543 height=4><BR>
+<H1>Data General NOVA &reg;<BR>CPU Control Instructions</H1>
+<IMG src="http://users.rcn.com/crfriend/museum/images/cbar3.gif" alt="" width=543 height=4><BR>
+<P>&nbsp;&nbsp;&nbsp
+This page describes the instructions which are used to control the
+internal operation of the CPU and various devices attached to it.
+<UL>
+<LI><A HREF="index.html">Architecture Overview</A>
+<LI><A HREF="PL.html">NOVA Program Load Example</A><P>
+<LI><A HREF="alc.html">Arithmetic/Logic Instructions</A>
+<LI><A HREF="io.html">Input/Output Instructions</A>
+<LI><A HREF="mri.html">Memory Reference Instructions</A>
+</UL>
+<HR>
+<P>&nbsp;&nbsp;&nbsp
+Coverage of the Nova CPU would be lacking if it left out how the CPU
+controls itself and its peripherals through its programming. This page
+will set forth the was that this is done.
+<P>&nbsp;&nbsp;&nbsp
+These instructions all function as I/O instructions which are targetted
+at the CPU, device number 77. Since that's the case, the instruction
+format is an I/O one:
+<PRE>
+       0 1 1             Transfer           /----- 1 1 1 1 1 1 --------\
+   /           \       /          \        /                            \
+   +---+---+---+---+---+---+---+---+---+---+----+----+----+----+----+----+
+   | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 |
+   +---+---+---+---+---+---+---+---+---+---+----+----+----+----+----+----+
+               \      /            \       /
+                  AC                Control
+
+</PRE>
+<P>&nbsp;&nbsp;&nbsp
+The OPcode of each CPU control instruction is specified by its function
+and is defined by the ``Transfer'' and ``Control'' fields above. Instructions
+will be shown by their OPcode. It should be noted that these are really
+pseudo- operations, as the assembler translates them into the requisite
+I/O instructions.
+<P>&nbsp;&nbsp;&nbsp
+On a hardware level, the CPU ``Busy'' flag controls the status of the
+interrupt system and the ``Done'' flag is a power- failure indicator.
+<P><HR ALIGN=LEFT>
+<H2>The Instructions</H2>
+<P><A NAME="IORST"><HR WIDTH="25%" ALIGN=LEFT></A>
+<H3>I/O Reset (IORST)</H3>
+<DL>
+Equivalent I/O instruction: DICC&nbsp;&nbsp;0, CPU<BR>
+<DT>Function:
+<DD>&nbsp;&nbsp;&nbsp;The <STRONG>IORST</STRONG> instruction issues an
+I/O bus reset which causes all devices attached to the I/O bus to reset. All
+devices are left in a predefined, usually a "power-on", condition.
+<P>
+<DT>Assembler Syntax:
+<DD>IORST
+<P>
+<DT>Example:
+<DD><PRE>
+Start:    PC=50, I/O bus undefined
+Function: IORST
+Finish:   PC=51, I/O bus reset
+</PRE>
+</DL>
+<P><A NAME="HALT"><HR WIDTH="25%" ALIGN=LEFT></A>
+<H3>HALT (HALT)</H3>
+<DL>
+Equivalent I/O instruction: DOC&nbsp;&nbsp;0, CPU<BR>
+<DT>Function:
+<DD>&nbsp;&nbsp;&nbsp;The <STRONG>HALT</STRONG> instruction stops the
+computer by turning off the ``RUN ''flag in the processor status logic. The
+PC is set to the next sequential instruction. Pressing the ``Continue''
+switch on the front panel resumes execution. No ACs or I/O devices are
+affected.
+<P>
+<DT>Assembler Syntax:
+<DD>HALT
+<P>
+<DT>Example:
+<DD><PRE>
+Start:    PC=505, CPU running
+Function: HALT
+Finish:   PC=506, CPU halted
+</PRE>
+</DL>
+<P><A NAME="READS"><HR WIDTH="25%" ALIGN=LEFT></A>
+<H3>Read Panel Switches (READS)</H3>
+<DL>
+Equivalent I/O instruction: DIA&nbsp;&nbsp;AC, CPU<BR>
+<DT>Function:
+<DD>&nbsp;&nbsp;&nbsp;The <STRONG>READS</STRONG> instruction reads the
+contents of the front- panel switches and places said data into the
+specified AC. The previous contents of the AC are lost.
+<P>
+<DT>Assembler Syntax:
+<DD>READS&nbsp;&nbsp;&nbsp; AC
+<P>
+<DT>Example:
+<DD><PRE>
+Start:    Panel Switches=172000, AC1=0, PC=75
+Function: READS  1
+Finish:   AC1=172000, PC=76
+</PRE>
+</DL>
+<P><A NAME="INTEN"><HR WIDTH="25%" ALIGN=LEFT></A>
+<H3>Enable I/O Interrupts (INTEN)</H3>
+<DL>
+Equivalent I/O instruction: NIOS&nbsp;&nbsp;0, CPU<BR>
+<DT>Function:
+<DD>&nbsp;&nbsp;&nbsp;The <STRONG>INTEN</STRONG> instruction causes the
+CPU to enable its interrupt system <EM>following the next instruction</EM>. 
+This, in turn, allows I/O devices to interrupt the normal instruction flow
+by raising a flag in the CPU.
+<P>
+<DT>Assembler Syntax:
+<DD>INTEN&nbsp;&nbsp;&nbsp; 
+<P>
+<DT>Example:
+<DD><PRE>
+Start:    PC=3512, Interrupts disabled
+Function: INTEN
+Finish:   PC=3513, Interrupts enabled (at 3514 assuming no jump)
+</PRE>
+</DL>
+<P><A NAME="INTDS"><HR WIDTH="25%" ALIGN=LEFT></A>
+<H3>Disable I/O Interrupts (INTDS)</H3>
+<DL>
+Equivalent I/O instruction: NIOC&nbsp;&nbsp;0, CPU<BR>
+<DT>Function:
+<DD>&nbsp;&nbsp;&nbsp;The <STRONG>INTDS</STRONG> instruction immediately
+disables the I/O interrupt system, thereby preventing devices from
+altering the CPU's execution path.
+<P>
+<DT>Assembler Syntax:
+<DD>INTDS&nbsp;&nbsp;&nbsp;
+<P>
+<DT>Example:
+<DD><PRE>
+Start:    PC=3176, Interrupts enabled
+Function: INTDS
+Finish:   PC-3177, Interrupts disabled
+</PRE>
+</DL>
+<P><A NAME="MSKO"><HR WIDTH="25%" ALIGN=LEFT></A>
+<H3>Set Interrupt Mask (MSKO)</H3>
+<DL>
+Equivalent I/O instruction: DOB&nbsp;&nbsp; AC, CPU<BR>
+<DT>Function:
+<DD>&nbsp;&nbsp;&nbsp;The <STRONG>MSKO</STRONG> instruction places the
+contents of the selected AC into the interrupt mask registers of all the
+interrupt- capable devices on the I/O bus. The AC is not altered.
+<P>
+<DT>Assembler Syntax:
+<DD>MSKO&nbsp;&nbsp;&nbsp; AC
+<P>
+<DT>Example:
+<DD><PRE>
+Start:    PC=2176, AC2=157200, Interrupt mask=157300
+Function: MSKO  2
+Finish:   PC=2177, AC2=157200, Interrupt mask=157200
+</PRE>
+</DL>
+<P><A NAME="INTA"><HR WIDTH="25%" ALIGN=LEFT></A>
+<H3>Acknowledge Interrupt (INTA)</H3>
+<DL>
+Equivalent I/O instruction: DIB&nbsp;&nbsp; AC, CPU<BR>
+<DT>Function:
+<DD>&nbsp;&nbsp;&nbsp;The <STRONG>INTA</STRONG> instruction acknowledges
+an interrupt by placing the interrupting device's address into the
+selected AC. The previous contents of the AC are lost.
+<P>
+<DT>Assembler Syntax:
+<DD>INTA&nbsp;&nbsp;&nbsp; AC
+<P>
+<DT>Example:
+<DD><PRE>
+Start:    PC=312, Device 27 interrupting, Interrupts on
+Function: INTA 3
+Finish:   PC=313, AC3=27, Device 27 interrupt active, Interrupts off
+</PRE>
+</DL>
+<P><HR ALIGN=LEFT>
+<P>&nbsp;&nbsp;&nbsp
+This page described the Input/Output instructions of the Data General
+Nova minicomputer. Other pages describe:
+<UL>
+<LI><A HREF="index.html">Architecture Overview</A>
+<LI><A HREF="PL.html">NOVA Program Load Example</A><P>
+<LI><A HREF="alc.html">Arithmetic/Logic Instructions</A>
+<LI><A HREF="io.html">Input/Output Instructions</A>
+<LI><A HREF="mri.html">Memory Reference Instructions</A>
+</UL>
+<BR><IMG src="http://users.rcn.com/crfriend/museum/images/cbar3.gif" alt="" width=100% height="4">
+<HR>
+<CENTER>
+[ <A HREF="http://users.rcn.com/crfriend/museum/index.shtml">Museum Lobby</A> <IMG src="http://users.rcn.com/crfriend/museum/QB/text.gif" alt="" width=9 height=11> ]
+[ <A HREF="http://users.rcn.com/crfriend/museum/inven.shtml">Museum Catalogue</A> <IMG src="http://users.rcn.com/crfriend/museum/QB/text.gif" alt="" width=9 height=11> ]
+[ <A HREF="http://users.rcn.com/crfriend/">Carl's Homepage</A> <IMG src="http://users.rcn.com/crfriend/museum/QB/homepage.gif" alt="" width=14 height=12> ]
+</CENTER>
+<HR><BR>
+<CITE>Copyright &#169; 1998 - 2003, Carl R. Friend. </CITE>All rights reserved.<BR>
+<BR><ADDRESS>Comments to:
+<A HREF="mailto:carl.friend@rcsri.org">carl.friend@rcsri.org</A>
+<IMG src="http://users.rcn.com/crfriend/museum/QB/mailto.gif" alt="" width=14 height=10>
+</ADDRESS>
+Last Modified: Sun Sep 13 15:15:46 EDT 1998
+</BODY>
+</HTML>

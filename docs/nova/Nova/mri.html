@@ -1,0 +1,207 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 3.0//EN">
+<HTML>
+<HEAD>
+<TITLE>Nova Memory Reference Instructions</TITLE>
+<LINK REV=MADE HREF="mailto:carl.friend@rcsri.org">
+<BASE HREF="">
+<META http-equiv="PICS-Label" content='(PICS-1.0 "http://www.rsac.org/ratingsv01.html" l gen true comment "RSACi North America Server" by "carl.friend@rcsri.org" for "http://www.ultranet.com/~engelbrt/carl/museum/" on "1996.04.04T08:15-0500" exp "1997.07.01T08:15-0500" r (n 0 s 0 v 0 l 2))'>
+<LINK REL="stylesheet" HREF="http://users.rcn.com/crfriend/museum/crf.css" type="text/css">
+<META NAME="ROBOTS" CONTENT="NOINDEX, NOFOLLOW">
+</HEAD>
+
+<BODY>
+<IMG src="http://users.rcn.com/crfriend/museum/images/cbar3.gif" alt="" width=543 height=4><BR>
+<H1>Data General NOVA &reg;<BR>Memory Reference Instructions</H1>
+<IMG src="http://users.rcn.com/crfriend/museum/images/cbar3.gif" alt="" width=543 height=4><BR>
+<P>&nbsp;&nbsp;&nbsp
+This page describes the memory reference class of instructions in the
+Nova set. Other pages describe:
+<UL>
+<LI><A HREF="index.html">Architecture Overview</A>
+<LI><A HREF="PL.html">NOVA Program Load Example</A><P>
+<LI><A HREF="alc.html">Arithmetic/Logic Instructions</A>
+<LI><A HREF="io.html">Input/Output Instructions</A>
+</UL>
+<HR>
+<P>&nbsp;&nbsp;&nbsp
+Since the Data General Nova operates as a load/store machine it's fairly
+easy to lunp all the memory access instructions into a single basic class,
+which is what I've done here. The instructions listed here are the only
+ones which manipulate main memory directly, and all do so using a fairly
+simple addressing scheme. The way the Nova addresses memory was covered
+in detail in the <A HREF="index.html">Introduction</A> to
+the machine.
+<P>&nbsp;&nbsp;&nbsp
+All the instructions in this class have a common format:
+<PRE>
+                         I          /---------- Displacement ----------\
+                       /   \       /                                    \
+   +---+---+---+---+---+---+---+---+---+---+----+----+----+----+----+----+
+   | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 |
+   +---+---+---+---+---+---+---+---+---+---+----+----+----+----+----+----+
+   \                  /    \       /
+    \--- Function ---/       Index  
+</PRE>
+<P>&nbsp;&nbsp;&nbsp
+In general, instructions will be presented by their assembler mnemonics,
+followed by a short discussion of the instruction's function.
+<P><HR ALIGN=LEFT>
+<H2>Load/Store Instructions</H3>
+<P><A NAME="LDA"><HR WIDTH="25%" ALIGN=LEFT></A>
+<H3>Load Accumulator (LDA)</H3>
+<PRE>
+              Accumulator    Index
+               /       \   /       \
+   +---+---+---+---+---+---+---+---+---+---+----+----+----+----+----+----+
+   | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 |
+   +---+---+---+---+---+---+---+---+---+---+----+----+----+----+----+----+
+   \           /       \   /       \                                     /
+    \  0 0 1  /          I          \---------- Displacement -----------/
+</PRE>
+<P>&nbsp;&nbsp;&nbsp
+<DL><DT>Function:
+<DD>The <STRONG>LDA</STRONG> instruction takes the data from the memory
+location addressed by "E", the effective address, and places it into
+the AC specified by bits 3 and 4. The previous contents of the AC are
+lost; the memory location and carry bit remain unchanged.
+<P>
+<DT>Assembler Syntax:
+<DD>LDA AC, [@]D[, I]
+</DL>
+<P><A NAME="STA"><HR WIDTH="25%" ALIGN=LEFT></A>
+<H3>Store Accumulator (STA)</H3>
+<PRE>
+              Accumulator    Index
+               /       \   /       \
+   +---+---+---+---+---+---+---+---+---+---+----+----+----+----+----+----+
+   | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 |
+   +---+---+---+---+---+---+---+---+---+---+----+----+----+----+----+----+
+   \           /       \   /       \                                     /
+    \  0 1 0  /          I          \---------- Displacement -----------/
+</PRE>
+<P>&nbsp;&nbsp;&nbsp
+<DL>
+<DT>Function:
+<DD>The <STRONG>STA</STRONG> instruction stores the contents of the AC
+specified by bits 3 and 4 into the location specified by "E", the
+effective address. The previous contents of "E" are lost; the AC and
+carry are unaffected.
+<P>
+<DT>Assembler Syntax:
+<DD>STA AC, [@]D[, I]
+</DL>
+<P><HR>
+<H2>Program Flow Instructions</H2>
+<P><A NAME="JMP"><HR WIDTH="25%" ALIGN=LEFT></A>
+<H3>Jump (JMP)</H3>
+<PRE>
+                         I          /---------- Displacement ----------\
+                       /   \       /                                    \
+   +---+---+---+---+---+---+---+---+---+---+----+----+----+----+----+----+
+   | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 |
+   +---+---+---+---+---+---+---+---+---+---+----+----+----+----+----+----+
+   \                  /    \       /
+    \    0 0 0 0 0   /       Index  
+</PRE>
+<DL>
+<DT>Function:
+<DD>The JMP instruction takes the computed value of "E" and places it in
+the Program Counter (PC) causing the flow of the program to resume at
+"E". The previous contents of the PC are lost; the carry bit is unchanged.
+<P>
+<DT>Assembler Syntax:
+<DD>JMP [@]D[, I]
+</DL>
+<P><A NAME="JSR"><HR WIDTH="25%" ALIGN=LEFT></A>
+<H3>Jump to Subroutine (JSR)</H3>
+<PRE>
+                         I          /---------- Displacement ----------\
+                       /   \       /                                    \
+   +---+---+---+---+---+---+---+---+---+---+----+----+----+----+----+----+
+   | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 |
+   +---+---+---+---+---+---+---+---+---+---+----+----+----+----+----+----+
+   \                  /    \       /
+    \    0 0 0 0 1   /       Index  
+</PRE>
+<DL>
+<DT>Function:
+<DD>The JSR instruction places the 15-bit value in the Program Counter 
+(PC) <EM>plus one</EM> and places it in AC3 then takes the computed value
+of "E" and places it in the PC causing the flow of the program to resume
+at "E". The previous contents of the PC and AC3 are lost; the carry bit is
+unchanged.
+<P>
+A return is accomplished via a "JMP 0,3" instruction.
+<P>
+<DT>Assembler Syntax:
+<DD>JSR [@]D[, I]
+</DL>
+<P><HR ALIGN=LEFT>
+<H2>Increment/Decrement Memory Instructions</H3>
+<P><A NAME="ISZ"><HR WIDTH="25%" ALIGN=LEFT></A>
+<H3>Increment and Skip if Zero (ISZ)</H3>
+<PRE>
+                         I          /---------- Displacement ----------\
+                       /   \       /                                    \
+   +---+---+---+---+---+---+---+---+---+---+----+----+----+----+----+----+
+   | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 |
+   +---+---+---+---+---+---+---+---+---+---+----+----+----+----+----+----+
+   \                  /    \       /
+    \    0 0 0 1 0   /       Index  
+</PRE>
+<DL>
+<DT>Function:
+<DD>The ISZ instruction increments the contents of the location addressed
+by "E" by one and skips the next instruction if the result equals zero. The
+carry bit is unaffected.
+<P>
+<DT>Assembler Syntax:
+<DD>ISZ [@]D[, I]
+</DL>
+<P><A NAME="DSZ"><HR WIDTH="25%" ALIGN=LEFT></A>
+<H3>Decrement and Skip if Zero (DSZ)</H3>
+<PRE>
+                         I          /---------- Displacement ----------\
+                       /   \       /                                    \
+   +---+---+---+---+---+---+---+---+---+---+----+----+----+----+----+----+
+   | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 |
+   +---+---+---+---+---+---+---+---+---+---+----+----+----+----+----+----+
+   \                  /    \       /
+    \    0 0 0 1 1   /       Index  
+</PRE>
+<DL>
+<DT>Function:
+<DD>The DSZ instruction decrements the contents of the location addressed
+by "E" by one and skips the next instruction if the result equals zero. The
+carry bit is unaffected.
+<P>
+<DT>Assembler Syntax:
+<DD>DSZ [@]D[, I]
+</DL>
+<P><HR ALIGN=LEFT>
+<P>&nbsp;&nbsp;&nbsp
+This page described the Load/Store instructions of the Data General
+Nova minicomputer. Other pages describe:
+<UL>
+<LI><A HREF="index.html">Architecture Overview</A>
+<LI><A HREF="PL.html">NOVA Program Load Example</A><P>
+<LI><A HREF="alc.html">Arithmetic/Logic Instructions</A>
+<LI><A HREF="io.html">Input/Output Instructions</A>
+</UL>
+<BR><IMG src="http://users.rcn.com/crfriend/museum/images/cbar3.gif" alt="" width=100% height="4">
+<HR>
+<CENTER>
+[ <A HREF="http://users.rcn.com/crfriend/museum/index.shtml">Museum Lobby</A> <IMG src="http://users.rcn.com/crfriend/museum/QB/text.gif" alt="" width=9 height=11> ]
+[ <A HREF="http://users.rcn.com/crfriend/museum/inven.shtml">Museum Catalogue</A> <IMG src="http://users.rcn.com/crfriend/museum/QB/text.gif" alt="" width=9 height=11> ]
+[ <A HREF="http://users.rcn.com/crfriend/">Carl's Homepage</A> <IMG src="http://users.rcn.com/crfriend/museum/QB/homepage.gif" alt="" width=14 height=12> ]
+</CENTER>
+<HR><BR>
+<CITE>Copyright &#169; 1998 - 2003, Carl R. Friend. </CITE>All rights reserved.<BR>
+<BR><ADDRESS>Comments to:
+<A HREF="mailto:carl.friend@rcsri.org">carl.friend@rcsri.org</A>
+<IMG src="http://users.rcn.com/crfriend/museum/QB/mailto.gif" alt="" width=14 height=10>
+</ADDRESS>
+Last Modified: Sun Sep 13 11:35:43 EDT 1998
+</BODY>
+</HTML>
+

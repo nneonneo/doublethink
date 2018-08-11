@@ -1,0 +1,281 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 3.0//EN">
+<HTML>
+<HEAD>
+<TITLE>Data General NOVA Basic Instruction Summary</TITLE>
+<LINK REV=MADE HREF="mailto:carl.friend@rcsri.org">
+<BASE HREF="">
+<META http-equiv="PICS-Label" content='(PICS-1.0 "http://www.rsac.org/ratingsv01.html" l gen true comment "RSACi North America Server" by "carl.friend@rcsri.org" for "http://www.ultranet.com/~engelbrt/carl/museum/" on "1996.04.04T08:15-0500" exp "1997.07.01T08:15-0500" r (n 0 s 0 v 0 l 2))'>
+<META NAME="ROBOTS" CONTENT="NOINDEX, NOFOLLOW">
+<LINK REL="stylesheet" HREF="http://users.rcn.com/crfriend/museum/crf.css" type="text/css">
+</HEAD>
+
+<BODY>
+<IMG src="http://users.rcn.com/crfriend/museum/images/cbar3.gif" alt="" width=543 height=4><BR>
+<H1>Data General NOVA &reg;<BR>Instruction Set Summary</H1>
+<IMG src="http://users.rcn.com/crfriend/museum/images/cbar3.gif" alt="" width=543 height=4><BR>
+<H2>Foreword</H2>
+<P>&nbsp;&nbsp;&nbsp
+This document will attempt to describe the Data General NOVA line of 16 bit
+computers in sufficient detail to allow a hobbyist to begin to program the
+device at a machine- code level.
+<P>&nbsp;&nbsp;&nbsp
+This document is not intended to be an in- depth analysis of the machine, nor
+is it intended to be a tutorial on programming the device. I've prepared it
+primarily as an aid to hobbyists who may have acquired one of these systems
+and who wish to use said system as an amusement or part of a working
+collection. I've tried to be as accurate as possible, but I'm sure there
+are errors and will welcome 
+<A HREF="mailto:carl.friend@rcsri.org">E-mail</A> with any corrections.
+<P>&nbsp;&nbsp;&nbsp
+Enjoy.
+<P><HR>
+<P>&nbsp;&nbsp;&nbsp
+This document is arranged in sections which cover:
+<UL>
+<LI><A HREF="index.html#Architecture">Architecture</A>
+<LI><A HREF="index.html#Addressing">Memory Addressing</A>
+<LI><A HREF="index.html#Interrupts">The Interrupt System</A>
+<LI><A HREF="index.html#MagicMem">Magic Memory Locations</A>
+<LI><A HREF="PL.html">NOVA Program Load Example</A>
+<LI>Instructions
+<UL>
+<LI><A HREF="alc.html">Arithmetic Instructions</A>
+<LI><A HREF="cpu.html">CPU Control Instructions</A>
+<LI><A HREF="io.html">Input/Output Instructions</A>
+<LI><A HREF="mri.html">Memory Reference Instructions</A>
+</UL>
+<P>
+<LI><A HREF="bi-list.html">Instructions listed Alphabetically</A>
+</UL>
+<A NAME="Architecture"><HR></A>
+<H2>Architecture</H2>
+<P>&nbsp;&nbsp;&nbsp
+Data General Corporation, of Southborough (now Westborough), Massachusetts
+introduced the original Nova in 1969. From those beginnings the Nova line
+grew into a family of compatible machines which were formidable competitors
+to DEC's pdp11 series.
+<P>&nbsp;&nbsp;&nbsp
+The Nova can be simply described as a 16-bit 4-accumulator machine
+which operates on a load/store basis. This, in plain language, means
+that the ALU and data paths are sixteen bits wide (from a programmer's
+viewpoint), there are four ACs (Accumulators, aka "registers"), and there are
+no fancy addressing modes (as in the pdp11). In addition to the four
+16-bit accumulators there is a single-bit register known as "Carry" which
+participates in arithmetic and logic instructions.
+<P>&nbsp;&nbsp;&nbsp
+Words in memory are represented in this document thusly:
+<P>
+<PRE>
+   +---+---+---+---+---+---+---+---+---+---+----+----+----+----+----+----+
+   | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 |
+   +---+---+---+---+---+---+---+---+---+---+----+----+----+----+----+----+
+</PRE>
+<P>&nbsp;&nbsp;&nbsp
+The Nova has separate I/O and memory buses and separate classes of
+instructions to access each of them. Memory transfers are typically
+16-bit words (although the Nova 4 can transfer 8-bit bytes) and I/O
+transfers are either 8-bit bytes or full 16-bit words. Both buses are
+sixteen bits in width.
+<P>&nbsp;&nbsp;&nbsp
+The I/O system in the NOVA is defined by a six bit address bus yielding a
+total of 64 possible devices. I/O transfers involve the full 16-bit word, but
+devices may choose to only use a subset of those bits. A data channel
+facility is available for DMA functionality.
+<P>
+The mainstore in the Nova machines operates on a word basis, 16 bits at a
+time. This means that for byte- level accesses, a 16 bit quantity is taken
+from memory, and, in necessary, masked/ shifted to provide the desired
+eight bit byte. In most of the Nova machines (excepting the Nova 4) there
+is no hardware byte- access capability; packing and unpacking words is the
+responsibility of the programmer.
+<P>&nbsp;&nbsp;&nbsp
+The Program Counter (PC) in the Nova is 15 bits in width. This feature
+defines the basic 32 kW memory capacity of the machine. Some Novas, beginning
+rather early in fact, supported memory management and mapping schemes
+which could boost the <EM>physical</EM> memory capacity to as high as
+128 kW; logical program space, however, remained at 32 kW.
+<P>&nbsp;&nbsp;&nbsp
+Data General chose to use the octal (base eight) numbering scheme to
+represent values stored in the Nova's memory and in its operation. I'll
+stick to that convention here; unless otherwise specified, all numbers
+in this document will be expressed in octal.
+<P><A NAME="Addressing"><HR></A>
+<H2>Memory Addressing in the Nova</H2>
+<P>&nbsp;&nbsp;&nbsp
+As mentioned earlier, Novas operate on a load/ store basis. This implies
+the existence of (at the very least) instructions to load an AC from
+main memory and to store data back to memory. There are also instructions
+which access memory for the purposes of program flow control (jumps)
+and instructions which modify memory locations (increments). All of
+the instructions which access, or modify, memory share the same basic
+instruction format.
+<P>&nbsp;&nbsp;&nbsp
+Novas support three addressing modes, known as "Page Zero", "PC Relative", and
+"AC Indexed". Two of the four Accumulators may be used as index
+registers, these being AC2 and AC3.
+<H3>Producing an Address</H3>
+<P>&nbsp;&nbsp;&nbsp
+The Nova produces its target (or <EM>Effective</EM>) address (<EM>E</EM>) in
+two steps. It first step computes the so-called "intermediate address" which
+is the base it uses if indirection is later required. In many cases, the
+intermediate address <EM>is</EM> the value required and address calculation
+stops there; in others, indirection is required and the intermediate address
+forms the first address for that process. Indirection is discussed below.
+<P>&nbsp;&nbsp;&nbsp
+The basic format for any memory- reference instruction in the Nova is:
+<PRE>
+                         I          /---------- Displacement ----------\
+                       /   \       /                                    \
+   +---+---+---+---+---+---+---+---+---+---+----+----+----+----+----+----+
+   | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 |
+   +---+---+---+---+---+---+---+---+---+---+----+----+----+----+----+----+
+                           \       /
+                              Mode  
+</PRE>
+<P>&nbsp;&nbsp;&nbsp
+Bits zero through four control the instruction operation and what ACs
+(if any) are to participate in the instruction. The rest of the fields
+will be discussed here.
+<P>&nbsp;&nbsp;&nbsp
+The <EM>Mode</EM> field controls what mode the Nova will use to access
+memory. As mentioned above, the Nova supports three different memory
+addressing models; the use of the <EM>Displacement</EM> field will
+vary according to the mode in use. The modes are as follows:
+<P>
+<UL>
+<LI>00 - Page Zero
+<LI>01 - PC-Relative
+<LI>10 - AC2 indexed
+<LI>11 - AC3 indexed
+</UL>
+<P>&nbsp;&nbsp;&nbsp
+Here's how they work:
+<P>
+<DL><DT>Page Zero:
+<DD>In Page Zero addressing, the value of the Displacement field is taken
+as an <EM>unsigned</EM> (0 to 255) value and is the value of the intermediate
+address. Page Zero addressing may be used from anywhere in the address
+space, regardless of Program Counter (PC) contents to access any word in
+the lowest 256 memory locations. This mode is selected when both bits
+six and seven of the instruction word are "0".
+<P><DT>PC-Relative:
+<DD>In PC- relative addressing, the Displacement field is used as
+a <EM>signed</EM> quantity which is added to the current value of the Program
+Counter (PC) to form the intermediate address. This allows access to any
+word within the range of PC+127 and PC-128 words. Note that this form
+produces inherently relocatable code. In this mode, bit six is a "0"
+and bit seven is a "1".
+<P><DT>AC Indexed:
+<DD>In AC- indexed addressing the Displacement field is taken as
+a <EM>signed</EM> value and added to the contents of either AC2 or AC3
+to form the intermediate address. In both of these modes, bit six of
+the instruction word is a "1" and bit seven selects the desired AC ("0"
+for AC2; "1" for AC3).
+</DL>
+<H3>Indirect Addressing on the Nova</H3>
+<P>&nbsp;&nbsp;&nbsp
+Once the intermediate address is formed, the machine examines the
+value in bit five of the instruction word. If that bit is a "1", then
+indirection is called for and further address computation is performed;
+if this bit is a "0", then the intermediate address is deemed the
+effective address and is used unmodified.
+<P>&nbsp;&nbsp;&nbsp
+In indirection, the value which is fetched from the intermediate address
+becomes the next address in the chain. This value may, itself, be an
+indirect address if bit zero is a "1". If bit zero is "1", then the
+word specified by bits one through fifteen is fetched and the indirection
+cycle continues. When bit zero of the fetched word is "0", then the
+chain is said to be complete and the final address is the value which
+last came from memory.
+<P>&nbsp;&nbsp;&nbsp
+Note that on unmapped Novas it is possible to disable (hang) the machine
+by way of an indirection loop. Pressing "stop" on the console will have
+no effect on this condition; the machine needs to be reset, and in
+doing so all context will be lost. Mapped Novas can have their memory
+management hardware cause a trap if an indirection chain goes longer
+than sixteen references, but this is not enabled by default. Don't do
+indirection loops. 
+<P>&nbsp;&nbsp;&nbsp
+Memory locations 20-27 and 30-37 behave in very special ways when accessed
+indirectly. These are <EM>auto-increment</EM> and <EM>auto-decrement</EM> 
+locations, respectively. When these locations are addressed in an indirection
+chain, their value is increased or decreased by one <EM>before</EM> their
+value is fetched for use. They are especially useful for traversing lists
+and arrays in linear fashion. When accessed non- indirectly, they behave as
+normal memory locations.
+<P><A NAME="Interrupts"><HR></A>
+<H2>I/O Interrupts on the Nova</H2>
+<P>&nbsp;&nbsp;&nbsp
+The Nova has a fairly simple interrupt scheme compared to many computers. It's
+implemented as a single line system which implies that priority is
+associated with a device's physical position on the I/O bus. This is partly
+true, but the Nova uses a neat trick with interrupt masks which can be
+used to mask out interrupts from certain devices creating a form of
+``interrupt priority''. In these paragraphs, I'll attempt to convey to
+the reader a sense of how the Nova interrupt system works.
+<P>&nbsp;&nbsp;&nbsp
+The normal power- up default state of the machine is to have the interrupt
+system turned off and interrupts disabled on all the I/O devices. This is
+also the state following the issuance of an ``IORST'' instruction. The
+interrupt system is ``primed'' by the ``INTEN'' instruction and goes
+active after the first instruction following the INTEN.
+<P>&nbsp;&nbsp;&nbsp
+When an (interrupt- capable) I/O device requires service, it raises an
+interrupt request. The CPU checks this line between each instruction and
+if an interrupt request is pending it enters the ``interrupt state''. In
+this state the interrupt flag is reset, the current PC (the next
+instruction to be executed, in lieu of interrupts) is saved to physical
+location zero, and the machine executes an indirect jump through physical
+location one.
+<P>&nbsp;&nbsp;&nbsp
+It is the programmer's responsibility to place the address of the
+interrupt handler into location one, to enable interrupts in the
+first place, and to re-enable them following the completion of the
+interrupt. It is also the programmer's responsibility to save the
+state of the machine (e.g. all ACs and Carry) so the interrupted
+program can continue on.
+<P>&nbsp;&nbsp;&nbsp
+With interrupts disabled immediately following an interrupt, the handler
+need not be concerned with itself being interrupted (unless the programmer
+sets it up that way) and can identify the interrupting device. This can
+be done either by polling or via the ``INTA'' (Interrupt Acknowledge)
+instruction. ``INTA'' will load the device address of the interrupting
+device into a selected AC when it is executed (remember to save the
+AC before using it!). From there, the driver program can dispatch the
+device and handle the request.
+<P><A NAME="MagicMem"><HR></A>
+<H2>Magic and Reserved Memory Locations on the Nova</H2>
+<P>&nbsp;&nbsp;&nbsp
+The basic Nova architecture isn't too big on reserved locations or ``magic''
+locations, but there are a few. Locations zero and one in physical memory
+are reserved for the interrupt system, and there are a bank of ``special''
+locations in the auto-increment and auto-decrement areas. I'll describe those
+here. Later machines, of course, have more reserved locations, but those
+are beyond the scope of this document.
+<P>&nbsp;&nbsp;&nbsp
+Locations 20 through 37 (octal) in the logical address space (there may
+be two location 20s in MAPped machines) behave in a special manner when
+accessed indirectly. When hit via an indirection operation, these locations
+either increment by one or decrement by one automatically before the
+value is taken to be used in the effective address. 20 through 27 are
+the auto-incrementing addresses and 30 through 37 are the auto-decrementing
+ones. They behave normally when accessed directly. This makes them
+useful for traversing lists and areas of core.
+<P>
+<BR><IMG src="http://users.rcn.com/crfriend/museum/images/cbar3.gif" alt="" width=100% height="4">
+<HR>
+<CENTER>
+[ <A HREF="http://users.rcn.com/crfriend/museum/index.shtml">Museum Lobby</A> <IMG src="http://users.rcn.com/crfriend/museum/QB/text.gif" alt="" width=9 height=11> ]
+[ <A HREF="http://users.rcn.com/crfriend/museum/inven.shtml">Museum Catalogue</A> <IMG src="http://users.rcn.com/crfriend/museum/QB/text.gif" alt="" width=9 height=11> ]
+[ <A HREF="http://users.rcn.com/crfriend/">Carl's Homepage</A> <IMG src="http://users.rcn.com/crfriend/museum/QB/homepage.gif" alt="" width=14 height=12> ]
+</CENTER>
+<HR><BR>
+<CITE>Copyright &#169; 1998 - 2003, Carl R. Friend. </CITE>All rights reserved.<BR>
+<BR><ADDRESS>Comments to:
+<A HREF="mailto:carl.friend@rcsri.org">carl.friend@rcsri.org</A>
+<IMG src="http://users.rcn.com/crfriend/museum/QB/mailto.gif" alt="" width=14 height=10>
+</ADDRESS>
+Last Modified: Tue Jan 18 21:11:40 EST 2000
+</BODY>
+</HTML>
+

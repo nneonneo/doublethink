@@ -1,0 +1,282 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 3.0//EN">
+<HTML>
+<HEAD>
+<TITLE>DG Nova Extended Instructions</TITLE>
+<LINK REV=MADE HREF="mailto:carl.friend@rcsri.org">
+<BASE HREF="">
+<META http-equiv="PICS-Label" content='(PICS-1.0 "http://www.rsac.org/ratingsv01.html" l gen true comment "RSACi North America Server" by "carl.friend@rcsri.org" for "http://www.ultranet.com/~engelbrt/carl/museum/" on "1996.04.04T08:15-0500" exp "1997.07.01T08:15-0500" r (n 0 s 0 v 0 l 2))'>
+<META NAME="ROBOTS" CONTENT="NOINDEX, NOFOLLOW">
+<LINK REL="stylesheet" HREF="http://users.rcn.com/crfriend/museum/crf.css" type="text/css">
+</HEAD>
+
+<BODY>
+<IMG src="http://users.rcn.com/crfriend/museum/images/cbar3.gif" alt="" width=543 height=4><BR>
+<H1>Data General Nova<BR>Extended Instructions</H1>
+<IMG src="http://users.rcn.com/crfriend/museum/images/cbar3.gif" alt="" width=543 height=4><BR>
+<P>&nbsp;&nbsp;&nbsp
+Certain late- model Novas, and the MicroNOVA class machines have certain
+features that distinguish them from the earlier machines. Most notably these
+include <A HREF="extend-instr.html#STACK">stack instructions</A>, 
+hardware <A HREF="extend-instr.html#MDV">multiply/ divide</A>, 
+and, in the Nova 4, <A HREF="extend-instr.html#BYTES">byte
+manipulation</A> and <A HREF="extend-instr.html#TRAPS">trap</A>
+ capabilities. Late model Novas also have additional 
+<A HREF="extend-instr.html#MAGIC">dedicated memory locations</A>
+above and beyond earlier systems.</P>
+<P>&nbsp;&nbsp;&nbsp
+These extended abilities were implemented using I/O instructions pointing
+to device number one - the Multiply/ Divide device in the early Novas. Hence,
+all the instructions presented here will use the standard I/O form of:</P>
+<BR>
+<PRE>
+       0 1 1             Transfer           /----- Device Code --------\
+   /           \       /          \        /                            \
+   +---+---+---+---+---+---+---+---+---+---+----+----+----+----+----+----+
+   | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 |
+   +---+---+---+---+---+---+---+---+---+---+----+----+----+----+----+----+
+               \      /            \       /
+                  AC                Control
+
+<BR>
+</PRE>
+<P>&nbsp;&nbsp;&nbsp
+I'm not going to detail all the possible bit positions using the above
+diagram, but am going to describe the instructions using the assembler
+format. Refer to the <A HREF="io.html">basic I/O instruction</A>
+document for bit coding of the individual options.</P>
+<A NAME="MDV"><HR><H2>Nova Multiply/Divide</H2></A>
+<P>&nbsp;&nbsp;&nbsp
+First, let's have a look at the multiply/ divide instructions. These were
+optional on most of the early Nova- class machines but became standard on
+the MicroNOVAs.</P>
+<P>&nbsp;&nbsp;&nbsp
+<DL>
+<DT>MUL - MULtiply (<TT>MUL</TT>)
+<DD>The multiply instruction takes two 16 bit operands, stored in AC1 and AC2,
+and multiplies them together forming a 32 bit result in AC0 and AC1; AC2
+remains untouched. The assembler trnaslates the <TT>MUL</TT> opcode into
+a <TT>DOCP 2,MDV</TT> operation. (MDV is the symbolic definition of
+device 1 - the multiply/ divide option.)
+<P> AC0 is special in this case, as the instruction takes the 16 high- order
+bits of the multiplication result and <EM>adds</EM> them into AC0.
+<BR>
+<DT>DIV - DIVide (<TT>DIV</TT>)
+<DD>The divide instruction, obviously enough, performs the reverse of the
+multiply operation in that it takes a 32- bit dividend in AC0 and AC1 (high-
+order bits in AC0) and divides this quantity by the contents of AC2. The 16-
+bit quotient is placed into AC1 and the remainder is placed in AC0. AC2
+remains unchanged. The <TT>DIV</TT> mnemonic is translated to a 
+<TT>DOCS 2,MDV</TT> by the assembler.
+</DL>
+<BR>
+<A NAME="STACK"><HR><H2>Nova Stack Instructions</H2></A>
+<P>&nbsp;&nbsp;&nbsp
+Machines commencing with the Nova 3 sport hardware stacks, as do the members
+of the MicroNOVA family. These facilities greatly ease the handling of
+subroutines and facilitate the writing of re-entrant code. Basic capabilities
+like Push and POP are supported as well as some more advanced features. I'll
+discuss each in turn.
+<P>&nbsp;&nbsp;&nbsp
+All the stack instructions are, in fact, translated into I/O instructions
+by the assembler. The device number for all of them is 1 - the same as for
+the optional hardware multiply/ divide.
+<P>&nbsp;&nbsp;&nbsp
+<DL>
+<DT>MTSP - Move To Stack Pointer (<TT>MTSP AC</TT>)
+<DD>This instruction moves the specified AC to the Nova's stack pointer,
+thereby initialising the stack for operation. This <EM>must</EM> be done
+before using the stack! This instruction is translated into a 
+<TT>DOA AC,1</TT> by the assembler.
+<P>
+<DT>MFSP - Move From Stack Pointer (<TT>MFSP AC</TT>)
+<DD>This instruction transfers the 15-bit quantity in the stack pointer
+and places it into the specified AC. This instruction equates to
+a <TT>DOAC AC,1</TT> in the assembler.
+<P>
+<DT>MTFP - Move To Frame Pointer (<TT>MTFP AC</TT>)
+<DD>Initialises the 15- bit Frame Pointer with the contents of the specified
+AC. This step <EM>must</EM> be taken before the Frame Pointer is used. The
+assembler converts the <TT>MTSP AC</TT> to a <TT>NIO AC,1</TT> I/O instruction.
+<P>
+<DT>MFFP - Move From Frame Pointer (<TT>MFFP AC</TT>)
+<DD>Copies the current 15- bit contents of the Frame Pointer to the
+specified AC. The assembler converts the <TT>MFFP AC</TT> to 
+a <TT>NIOC AC,1</TT> I/O instruction.
+<P>
+<DT>PSHA - PuSH an Ac to the stack (<TT>PSHA AC</TT>)
+<DD>This increments the stack pointer by one and stores the contents of
+the specified AC at the resulting location. The <TT>PSHA AC</TT> notation
+is translated to a <TT>DIB AC,1</TT> by the assembler.
+<P>
+<DT>POPA - POP an Ac from the stack (<TT>POPA AC</TT>)
+<DD>This operation pops an AC from the stack by loading the specified AC
+with the contents of the memory location specified by the Stack Pointer
+then decrementing the Stack Pointer by one. The assember converts the
+<TT>POPA AC</TT> notation to a <TT>DIBC AC,1</TT> for execution.
+<P>
+<DT>SAV - Push a return block onto the stack (<TT>SAV</TT>)
+<DD>This instruction pushes a 5 word "return block" onto the stack for
+later retrieval by a "RET" instruction. The contents of the return block
+are as follows:
+<OL>
+<LI>Accumulator 0
+<LI>Accumulator 1
+<LI>Accumulator 2
+<LI>Frame Pointer
+<LI>Bits 1-15 of AC3 + the carry bit (in bit 0)
+<P>&nbsp;&nbsp;&nbsp
+Once the return block is pushed, the machine loads the <EM>updated</EM> contents
+of the stack pointer into the Frame pointer and AC3.</P>
+</OL>
+<P>&nbsp;&nbsp;&nbsp
+NOTE: The SAVe instruction is intended to be called immediately following
+the execution of a JSR instruction and entry into a subroutine. At this
+point in time, AC3 will contain the return address for the subroutine.</P>
+<P>&nbsp;&nbsp;&nbsp
+The assembler interprets the <TT>SAV</TT> as a <TT>DIC AC,1</TT> I/O
+instruction.</P>
+<DT>RET - Pop a "return block" from the stack (<TT>RET</TT>)
+<DD>This instruction pops a "return block" from the stack which was written
+by the "SAV" instruction. Items popped from the stack are:
+<OL>
+<LI>Bits 1-15 of the Program Counter and the Carry bit
+<LI>Accumulator 3
+<LI>Accumulator 2
+<LI>Accumulator 1
+<LI>Accumulator 0
+<P>&nbsp;&nbsp;&nbsp
+Once the block is popped, the instruction loads the updated contents of
+AC3 into the Frame Pointer. Program execution continues from the PC
+value loaded from the stack.</P>
+</OL>
+<P>&nbsp;&nbsp;&nbsp
+The assembler interprets the <TT>RET</TT> as a <TT>DICC AC,1</TT> I/O
+instruction.</P>
+</DL>
+<P>&nbsp;&nbsp;&nbsp
+Memory integrity is protected from runaway stacks by the stack protection
+mechanism. This facility causes a trap to location 3 in page zero when the
+stack pointer is incremented (or decremented) across a page boundary.</P>
+<P>&nbsp;&nbsp;&nbsp
+When a stack fault occurs, the address of the offending instruction is
+placed into page zero location 0 and the processor executes an indirect
+jump through page zero address 3. This is essentially the same as a
+standard Nova interrupt. Note that interrupts must be enabled for a
+stack fault to occur.</P>
+<A NAME="BYTES"><HR><H2>Byte Manipulation Instructions</H2></A>
+<P>&nbsp;&nbsp;&nbsp
+Beginning with the Nova 4, machines began to include byte- pointer
+instructions thereby lessening the burden on programmers by allowing
+them to forget about swapping bytes within words (remember that the
+NOVA is word addressed and accessed, not byte addressed). Like the
+stack instructions, these resemble I/O instructions addressed to
+device one.</P>
+<P>&nbsp;&nbsp;&nbsp
+The byte pointers used in these instructions are compatible with the
+the older style ones, which is to say that the pointer is formed by
+taking the word address, shifting it left one bit position thereby
+leaving bit 15 to specify which byte is to be manipulated.</P>
+<P>&nbsp;&nbsp;&nbsp
+There are two byte manipulation instructions, LDB and STB which will be
+described here. The instructions appear in memory in this format:</P>
+<PRE>
+                        001 or 100
+       0 1 1            LDB    STB                  0 0 0 0 0 1
+   /           \       /          \        /                            \
+   +---+---+---+---+---+---+---+---+---+---+----+----+----+----+----+----+
+   | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 |
+   +---+---+---+---+---+---+---+---+---+---+----+----+----+----+----+----+
+               \       /           \       /
+                  ACD                 ACS
+
+<BR></PRE>
+<DL>
+<DT>LDB - LoadD Byte (<TT>LDB acs, acd</TT>)
+<DD>The load byte instruction takes the 8-bit byte addressed by the
+contents of source AC (acs) and places it into the destination AC (acd). Bits
+0-7 of the destination AC are set to zero.<P>
+The assembler codes the instruction as <TT>DIA ACD, </TT> and puts the
+ACS specifier into the Transfer field. See the above diagram.
+</DD><P>
+<DT>STB - STore Byte (<TT>STB acs, acd</TT>)
+<DD>Functioning in reverse of the LDB instruction, STB takes the right
+half of the source AC and places it into the memory location addressed
+by the byte pointer in the Destination AC.
+<P>
+The assembler codes the instruction as <TT>DOB ACD, </TT> and puts the
+ACS specifier into the Transfer field. See the above diagram.
+</DL>
+<BR>
+<A NAME="TRAPS"><HR><H2>The Nova 4 Trap Instruction</H2></A>
+<P>&nbsp;&nbsp;&nbsp
+In a bow the Eclipse line, and in recognition that the machine classes
+were close enough to one another that programs written on the Nova class
+could execute natively on the Eclipse machines, the Nova 4 included the
+trap instruction designed to catch Eclipse- specific instructions. Creative
+programmers could use this facility to emulate lots of the Eclipse
+instructions on a Nova 4 if they so desired. The instruction appears
+thusly in memory:
+<PRE>
+
+     1            ACD                                      1 0 0 0
+   /   \       /       \                             /                  \
+   +---+---+---+---+---+---+---+---+---+---+----+----+----+----+----+----+
+   | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 |
+   +---+---+---+---+---+---+---+---+---+---+----+----+----+----+----+----+
+       \       /       \                             /
+          ACS                    Trap Number             
+
+</PRE>
+<P>&nbsp;&nbsp;&nbsp
+The observent reader should note that this is an ALC instruction with
+the no-load bit set and the never skip option selected. This is a
+combination which normally would never occur in general usage as it
+serves no function, other than as a no-op. It gets coded as follows:
+<DL>
+<DT>TRAP - Trap to location 47 (<TT>TRAP acs, acd, trap_number</TT>)
+<DD>Upon encountering this instruction the Nova 4 will, if running in
+user mode (mapped machines only), disable the user map, save the address
+of the trap instruction to location 46<SUB>(8)</SUB> in page zero, and
+jump indirect through location 47<SUB>(8)</SUB>. Unlike and interrupt,
+this instruction doesn not change the state of the ION bit.
+</DL><P>
+<A NAME="MAGIC"><HR><H2>Magic Memory Locations</H2></A>
+<P>&nbsp;&nbsp;&nbsp
+In addition to the standard Nova interrupt locations 0 and 1 in page zero,
+the extended Novas reserve three other words for trap purposes. These are:
+<P>
+<UL>
+<LI>3: Stack Protection Handler Address<P>
+<LI>46: Instruction Trap (offending instruction address)
+<LI>47: Instruction Trap Handler Address
+</UL>
+<P>&nbsp;&nbsp;&nbsp
+The first was discussed in the previous section on 
+<A HREF="extend-instr.html#STACK">stack instructions</A>. The
+second two reflect the direction that the 16- bit DG line was taking at
+the time and presage the coming of the Eclipse extended instructions.
+<P>&nbsp;&nbsp;&nbsp
+In the later Nova processors, if an ALC instruction is encountered that
+has the "No Load" bit set <STRONG>AND</STRONG> has a "never skip" option
+coded into it the machine assumes that the instruction is an Eclipse
+construct and traps, first storing the address of the offending instruction
+in location 46 then jumping indirectly through location 47.
+<BR>
+<BR><IMG src="http://users.rcn.com/crfriend/museum/images/cbar3.gif" alt="" width=100% height="4">
+<HR>
+<CENTER>
+[ <A HREF="http://users.rcn.com/crfriend/museum/index.shtml">Museum Lobby</A> <IMG src="http://users.rcn.com/crfriend/museum/QB/text.gif" alt="" width=9 height=11> ]
+[ <A HREF="http://users.rcn.com/crfriend/museum/inven.shtml">Museum Catalogue</A> <IMG src="http://users.rcn.com/crfriend/museum/QB/text.gif" alt="" width=9 height=11> ]
+[ <A HREF="http://users.rcn.com/crfriend/">Carl's Homepage</A> <IMG src="http://users.rcn.com/crfriend/museum/QB/homepage.gif" alt="" width=14 height=12> ]
+</CENTER>
+<HR><BR>
+<CITE>Copyright &#169; 1997 - 2003, Carl R. Friend. </CITE>All rights reserved.<BR>
+Webspace design by: Carbon & Silicon Alliance<BR>
+<BR><ADDRESS>Comments to:
+<A HREF="mailto:carl.friend@rcsri.org">carl.friend@rcsri.org</A>
+<IMG src="http://users.rcn.com/crfriend/museum/QB/mailto.gif" alt="" width=14 height=10>
+</ADDRESS>
+Last Modified: Sun Jul  5 10:53:50 EDT 1998
+</BODY>
+</HTML>
+

@@ -25,6 +25,5 @@ def build_prog(bs, tpos):
         val = int(op[:4], 8)
         if op.endswith('+b'):
             val += taddr
-        print >> sys.stderr, oct(val)
 
         bs.write_safe(tpos + 12 * i, 12, val)

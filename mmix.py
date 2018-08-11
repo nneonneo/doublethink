@@ -28,24 +28,26 @@ def LDVTS(dunno):
 	return [0x98, 0x07, 0x00, dunno]
 
 def tloc(loc):
-	loc = loc + 0x200 + 0x28
+	loc = loc + 0x200
 	assert loc < 0xFFFF
-	return [loc / 0xFF, loc % 0xFF]
+	return [loc // 0xFF, loc % 0xFF]
 
 def prog(bs, loc):
+	assert loc % 8 == 0
+	rloc = loc // 8
 	code = [
-		[SETI, 255] + tloc(loc + 0x8),
+		[SETI, 255] + tloc(rloc + 0x18 - 2),
 		[TRAP, 0, FOPENC, 3],
-		[SETI, 255] + tloc(loc + 0x12),
+		[SETI, 255] + tloc(rloc + 0x20 - 2),
 		[TRAP, 0, FREADC, 3],
-		[SETI, 255] + tloc(loc + 0x12),
+		[SETI, 255] + tloc(rloc + 0x28 - 2),
 		[TRAP, 0, FWRITEC, 1],
 	]
 
 	data = [
 		[ord("f"), ord("l"), ord("a"), ord("g"), 0, 0, 0, 0],
-		[0, 0] + tloc(loc) + [0, 0, 0, 0],
-		[0, 0] + tloc(loc + 0x16)
+		[0, 0] + tloc(rloc) + [0, 0, 0, 0],
+		[0, 0] + tloc(rloc + 0x16)
 	]
 
 	out = ""

@@ -1,5 +1,6 @@
 import lgp30
 import mix
+import nova
 import pdp8
 import pdp10
 from bitstr import BitString, bytes_to_bits
@@ -32,6 +33,12 @@ bs.write_safe(18*2, 18, 0622554)
 # program for LGP-30
 lgp30.build_prog(bs, 31*(64*(5-1)+11)) # @1984 for 248
 
+# protect nova
+bs.write_safe(32, 4, 0) # other combinations may be possible
+nova_tpos = 3200
+bs.write_safe(16 * (0225 - 0100), 16, nova_tpos//16 + 0100)
+nova.build_prog(bs, nova_tpos)
+
 # mix nops
 bs.write_safe(30+24, 6, 7)
 bs.write_safe(30+30, 4, 0x5)
@@ -41,7 +48,9 @@ bs.write_safe(90+24, 6, 0)
 mix.build_prog(bs, 120)
 
 # code for x64
-bs.write_safe(0x87*8, None, bytes_to_bits(open('shellcode.amd64', 'rb').read()))
+bs.write_safe(0x87*8, None, bytes_to_bits('\xe8' + struct.pack('<I', 0x480)))
+bs.write_safe((0x87+0x480+0x5)*8, None, bytes_to_bits(open('shellcode.amd64', 'rb').read()))
+
 # jmp for clemency
 bs.write_safe(0x0b*9, 9, 0b100000001)
 bs.write_safe(0x0c*9, 9, 0b110000000)

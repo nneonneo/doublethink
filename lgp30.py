@@ -14,6 +14,7 @@ u 0000+b # 0006 jump to 0000
 z 0001   # 0007 data to store
 '''.strip()
 
+# 18 bits
 def build_jump(bs, jpos, tpos):
     assert jpos % 31 == 0
     assert tpos % 31 == 0
@@ -22,6 +23,7 @@ def build_jump(bs, jpos, tpos):
     bs.write_safe(jpos + 18, 6, tmem // 64)
     bs.write_safe(jpos + 24, 6, tmem % 64)
 
+# 248 bits
 def build_prog(bs, tpos):
     assert tpos % 31 == 0
     tmem = tpos // 31 + 64

@@ -54,21 +54,6 @@ def program(commands):
 	for command in commands:
 		for byte in command:
 			binned = bin(byte)[2:]
-			out.append("0"*(6-len(binned)) + binned)
-	all_bin = "".join(out)
-	all_bin = all_bin if len(all_bin) % 8 == 0 else all_bin + "0"*(8 - len(all_bin) % 8)
-	bytes = []
-	for i in range(0, len(all_bin), 8):
-		str_version = all_bin[i:i+8]
-		bytes.append(chr(int(str_version, 2)))
-	
-	return "".join(bytes) + "0" * (4096 - len(bytes))
+			out += "0"*(6-len(binned)) + binned
 
-result = program([
-	[63, 63, 63, 63, 0],
-	LOAD_IMMEDIATE_i(0, 5),
-	TYPE_OUT(5, 3137),
-	HLT,
-])
-
-print(result)
+	return ''.join(out)

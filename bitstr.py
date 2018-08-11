@@ -7,6 +7,6 @@ class BitString(list):
             value = '{:0{width}b}'.format(value & ((1 << size) - 1), width=size)
         elif not size:
             size = len(value)
-        if any(v is not None for v in self[pos:pos+size]):
-            raise ValueError("attempted write to position %d already has value %s" % (pos, self[pos:pos+size]))
+        if not all(v is None or v == value[i] for i,v in enumerate(self[pos:pos+size])):
+            raise ValueError("attempted write to position %d of %s already has value %s" % (pos, value, self[pos:pos+size]))
         self[pos:pos+size] = value

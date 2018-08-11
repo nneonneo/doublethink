@@ -1,0 +1,47 @@
+<html><head>
+<!-- Based on MIT PDP-10 'Info' File by ??? -->
+<!-- This html version Copyright (c) 1995 by Henry G. Baker. -->
+<link rev="made" href="mailto:hbaker@netcom.com">
+<title>PDP-10 Boolean</title></head><body>
+MIT PDP-10 'Info' file converted to Hypertext 'html' format by <a href="ftp://ftp.netcom.com/pub/hb/hbaker/home.html">Henry Baker</a><p>
+
+<a href="Logical-Tests.html">Previous</a>
+<a href="pdp-10.html">Up</a>
+<a href="PC-Format.html">Next</a>
+
+<h1>Boolean Logic</h1>
+
+There are 16 possible boolean functions of 2 variables.  The PDP-10
+has 16 instruction classes (each with 4 modifiers) that perform these
+operations.  Each boolean function operates on the 36 bits of AC and
+memory as individual bits.
+
+<pre>
+C(AC)   0       0       1       1
+C(E)    0       1       0       1
+
+SETZ    0       0       0       0       SET to Zero
+AND     0       0       0       1       AND
+ANDCM   0       0       1       0       AND with Complement of Memory
+SETA    0       0       1       1       SET to AC
+ANDCA   0       1       0       0       AND with Complement of AC
+SETM    0       1       0       1       SET to Memory
+XOR     0       1       1       0       eXclusive OR
+IOR     0       1       1       1       Inclusive OR
+ANDCB   1       0       0       0       AND with Complements of Both
+EQV     1       0       0       1       EQuiValence
+SETCM   1       0       1       0       SET to Complement of Memory
+ORCM    1       0       1       1       OR with Complement of Memory
+SETCA   1       1       0       0       SET to Complement of AC
+ORCA    1       1       0       1       OR with Complement of AC
+ORCB    1       1       1       0       OR with Complements of Both
+SETO    1       1       1       1       SET to One
+</pre>
+
+Each of the 16 instructions above have four modifiers that specify
+where to store the result.  No modifier means result to AC.  Modifier
+I means Immediate: the memory data is &lt;0,,E&gt; and the result goes to
+AC.  M as a modifier means result should be stored in memory.  B
+means store the results in both memory and AC.
+
+</body></html>

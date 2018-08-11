@@ -1,0 +1,579 @@
+
+
+
+
+
+
+
+
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+
+<HTML LANG="en">
+ <HEAD>
+  <TITLE>PDP-8 Memory Reference Instructions</TITLE>
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+  <META name="viewport" content="width=device-width, initial-scale=1">
+  <META name="Author" content="Douglas W. Jones">
+  <META name="Language" content="English">
+  <META name="editor" content="/usr/bin/vi">
+  
+  
+  
+  <STYLE TYPE="text/css">
+   BODY { margin-left: 3%; margin-right: 3%; }
+   H2.SQUAT { margin-top: 0.4em; margin-bottom: 0.25em; }
+   H3.SQUAT { margin-top: 0.3em; margin-bottom: 0.2em; }
+   H4.SQUAT { margin-top: 0.2em; margin-bottom: 0.15em; }
+   H5.SQUAT { margin-top: 0.17em; margin-bottom: 0.15em; }
+   * { line-height: 1.1 }
+   P.SQUAT { margin-top: 0.25em; margin-bottom: 0.15em; }
+   UL.SQUAT { margin-top: 0.25em; margin-bottom: 0.15em; }
+   EM.O { font-style: normal; text-decoration: overline; }
+   EM.U { font-style: normal; text-decoration: underline; }
+   EM.S { font-style: normal; text-decoration: line-through; }
+   A { text-decoration: none; }
+   A.I { font-style: italic; text-decoration: none; }
+   SUP { vertical-align: 0; position: relative; bottom: 1ex; }
+   SUB { vertical-align: 0; position: relative; top: 0.8ex; }
+   TABLE.BOXY { border: 0; padding: 0; border-spacing: 0;
+                border-collapse: collapse; }
+   TD.BOX { border: solid; border-width: thin; border-color: DimGray;
+	      text-align: center; }
+   TD.BOXTT { border: solid; border-width: thin; border-color: DimGray;
+	      font-family: monospace; text-align: center; }
+   TD.TT { font-family: monospace; text-align: left; }
+   TD.TTSPACE { font-family: monospace; text-align: left; color: white }
+   TD.SHADE { background: Silver; text-align: center; }
+   CAPTION { padding-top: 6px; }
+   DIV.HEADBOX { border: groove; border-width: 2px; background: #F0F0E0; padding-top: 1%; padding-bottom: 1%; padding-left: 5px; }
+   DIV.HEADBOX P { margin-top: 0.8em; margin-bottom: 0.8em; }
+   DIV.HEADBOX H1 { margin-top: 0.2em; margin-bottom: 0.4em; }
+   DIV.HEADBOX H2 { margin-top: 0.2em; margin-bottom: 0.4em; }
+   DIV.INDENT { border: none; padding-left: 1em }
+   DIV.INVISIBLE { font-size: 3px; letter-spacing: -5px; color: white; background: white; }
+   DIV.INVISIBLE A:link { color: white; }
+   DIV.INVISIBLE A:visited { color: white; }
+   DIV.INVISIBLE A:active { color: white; }
+   DIV.invisible A:active { color: white; background: white; }
+  </STYLE>
+ </HEAD>
+ <BODY BGCOLOR="#FFFFFF" TEXT="#000000" link="#0000CC" vlink="#880088" alink="#880088">
+  <DIV CLASS=HEADBOX>
+   
+     <IMG SRC="http://www.cs.uiowa.edu/~jones/pdp8/logos/pdp8.gif"
+      HEIGHT="65"
+      WIDTH="65"
+      ALT="(none)"
+      HSPACE="5"
+      ALIGN=left
+     >
+     <IMG SRC="http://www.cs.uiowa.edu/~jones/transpix.gif"
+      ALT=" "
+      WIDTH="75%"
+      HEIGHT="1"
+     >
+    <DIV>
+   
+   <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0"><TR><TD>&nbsp;&nbsp;<TD>
+    
+     <H1>The Digital Equipment Corporation PDP-8</H1>
+    
+    
+     <H2>Memory Reference Instructions</H2>
+    
+    <P>
+    
+     Part of <A HREF="index.html">
+      
+      the PDP-8 Programmer's Reference Manual
+      
+     </A>
+     <BR>
+     
+    
+    
+     by
+     <A HREF="http://www.cs.uiowa.edu/~jones/">Douglas W. Jones</A>
+     
+     <BR>
+    
+    
+    <A HREF="http://www.uiowa.edu/">
+     T<SMALL>HE</SMALL> U<SMALL>NIVERSITY</SMALL>
+    <SMALL>OF</SMALL> I<SMALL>OWA</SMALL></A>
+    <A HREF="http://www.cs.uiowa.edu/">Department&nbsp;of&nbsp;Computer&nbsp;Science</A>
+    
+    
+    
+   </TABLE>
+    
+     </DIV>
+    
+  </DIV>
+ 
+
+
+
+<H2>Index</H2>
+<UL>
+<LI><A HREF="mri.html#format">Instruction Format</A>.
+<BR><A HREF="mri.html#and">000 - AND</A>.
+<BR><A HREF="mri.html#tad">001 - TAD</A>.
+<BR><A HREF="mri.html#isz">010 - ISZ</A>.
+<BR><A HREF="mri.html#dca">011 - DCA</A>.
+<BR><A HREF="mri.html#jms">100 - JMS</A>.
+<BR><A HREF="mri.html#jmp">101 - JMP</A>.
+<LI><A HREF="mri.html#modes">Addressing Modes</A>.
+<BR><A HREF="mri.html#pagezero">Z - The Page Select Bit</A>.
+<BR><A HREF="mri.html#indirect">I - The Indirect Bit</A>.
+<BR><A HREF="mri.html#autoindex">Autoindex Addressing</A>.
+<BR><A HREF="mri.html#immediate">Immediate Addressing</A>.
+<LI><A HREF="mri.html#macros">macros</A>.
+<BR><A HREF="mri.html#load">Loading the Accumulator</A>.
+<BR><A HREF="mri.html#logic">Other Logical Operations</A>.
+<BR><A HREF="mri.html#arithmetic">Other Arithmetic Operations</A>.
+<BR><A HREF="mri.html#block">Block Memory Operations</A>.
+</UL>
+
+<HR>
+
+<H2><A NAME=format>Instruction Format</A></H2>
+
+<PRE WIDTH="60">
+            00 01 02 03 04 05 06 07 08 09 10 11
+            ___________________________________
+           |  |  |  |  |  |  |  |  |  |  |  |  |
+           |__|__|__|__|__|__|__|__|__|__|__|__|
+           |        | I| Z|       7 bit        |
+           |  3 bit |     |    Word in Page    |
+           | Opcode | Mode                     |
+           |        |         Address          |
+</PRE>
+
+<H2>Instructions</H2>
+
+<H3><A NAME=and>000 - AND</A></H3>
+
+<PRE WIDTH="60">
+	AND	M
+</PRE>
+<P>
+The contents of memory location M are logically anded with AC, bit by bit.
+There is no effect on the link bit.  All other logical operations
+must be accomplished with
+<A HREF="mri.html#logic">macros</A>.
+
+
+<H3><A NAME=tad>001 - TAD</A></H3>
+
+<PRE WIDTH="60">
+	TAD	M
+</PRE>
+<P>
+The contents of memory location M are added to AC.
+A carry out of the high bit of AC will complement the link bit.
+Most other arithmetic operations
+must be accomplished with
+<A HREF="mri.html#arithmetic">macros</A>.
+
+<H3><A NAME=isz>010 - ISZ</A></H3>
+
+<PRE WIDTH="60">
+	ISZ	M
+</PRE>
+<P>
+The contents of memory location M are incremented and placed back
+in memory.  If the result stored in memory is zero, the program
+counter is incremented; as a result that the next instruction will
+be skipped if the result is zero.  AC and LINK are not modified.
+<P>
+ISZ is frequently used to increment memory addresses; unless the
+address could wrap around from 7777 to 0000, ISZ is used as if it
+will never skip.  If a wraparound is possible, it must be followed
+by a no-op.
+<P>
+ISZ allows the construction of a number of fast
+<A HREF="mri.html#block">macros for block operations</A>.
+
+<H3><A NAME=dca>011 - DCA</A></H3>
+
+<PRE WIDTH="60">
+	DCA	M
+</PRE>
+<P>
+The contents of the accumulator are stored in the memory location M;
+the accumulator is then cleared.  There is no effect on the link bit.
+The corresponding load operation must be accomplished by a
+<A HREF="mri.html#load">macro</A>
+
+<H3><A NAME=jms>100 - JMS</A></H3>
+
+<PRE WIDTH="60">
+	JMS	P
+</PRE>
+
+<P>
+The contents of PC (a pointer to the next instruction) is stored in
+memory location P as a return address, and then control is
+transfered to the location following P.  AC and LINK
+remain unchanged.  There is no return instruction; this is done
+using an indirect jump through P.
+
+<H3><A NAME=jmp>101 - JMP</A></H3>
+
+<PRE WIDTH="60">
+	JMP	P
+</PRE>
+
+<P>
+Control is transferred to memory location P.  AC and LINK remain
+unchanged.
+
+<H2><A NAME=modes>Addressing Modes</A></H2>
+
+<H3><A NAME=pagezero>Z - The Page Select Bit</A></H3>
+
+<PRE WIDTH="60">
+	TAD Z	ADDR
+	TAD	ADDR
+</PRE>
+<P>
+When the <A HREF="mri.html#format"> Z bit </A> of the instruction is zero,
+page zero addressing mode is used.  This allows addressing
+of memory locations 0000 through 0177 (octal) of the current memory
+from an instruction located anywhere in theat field.  The Z qualifier
+may be used to indicate that page zero mode is desired, but most
+PDP-8 assemblers will automatically generate page zero mode if the
+addressed location is in page zero.
+
+<P>
+When the <A HREF="mri.html#format"> Z bit </A> of the instruction is one,
+current page addressing mode is used.  This allows addressing of memory
+locations in the current page, as determined by the 5 most significant
+bits of the program counter (more accurately, the 5 most significant bits
+of the address of the location from which the instruction was fetched).
+All PDP-8 assemblers will generate current page mode when the addressed
+location is in the current page.
+
+<P>
+Direct addressing of locations not on the current page is impossible,
+but some PDP-8 assemblers will automatically generate indirect references
+to off-page locations, storing the indirect word at the end of the current
+page.  This usage is considered unsafe because indirection may change
+the memory field being referenced!
+
+<H3><A NAME=indirect>I - The Indirect Bit</A></H3>
+
+<PRE WIDTH="60">
+	TAD I	ADDR
+</PRE>
+<P>
+When the <A HREF="mri.html#format"> I bit </A> of the instruction is zero,
+direct addressing is used.  This allows any word in either page zero or
+the current page to be referenced as an operand.
+
+<P>
+When the <A HREF="mri.html#format"> I bit </A> of the instruction is one,
+indirect addressing is used.  In this mode, the word at the addressed
+location in page zero or the current page is used as a pointer to the
+intended operand.  This requires one additional memory cycle for the
+instruction.
+
+<P>
+All PDP-8 assemblers require the use of the I qualifier to indicate
+indirect mode.  Some PDP-8 assemblers will automatically generate
+indirect references for those instructions that directly reference
+off-page locations.
+
+<P>
+Indirect addressing using locations 0010 through 0017 (octal) has the
+side effect of incrementing these locations prior to use.  This is
+called <A HREF="mri.html#autoindex"> autoindexed addressing </A>.
+
+<P>
+Indirect addressing may be used to reference operands in any memory field,
+depending on how the DF (data_field) register is set.  By default, this is
+usually the current field, the same field as that from which the instruction
+was fetched.
+
+<H3><A NAME=autoindex>Autoindex Addressing</A></H3>
+
+<P>
+If indirect addressing is done through locations 0010 and 0017 (octal) of
+any memory field, the indirect word will be incremented prior to use.
+Other than this increment, auto-indexed mode is the same as indirect mode.
+Autoindex addressing is particularly useful for <A HREF="mri.html#block"> operations
+on blocks of consecutive words</A>.
+
+<H3><A NAME=immediate>Immediate Addressing</A></H3>
+
+<P>
+The PDP-8 does not support any immediate addressing mode, however, there
+are <A HREF="mri.html#load"> microcoded instructions </A> that can be used to load a
+number of useful constants in the accumulator in a single machine cycle,
+and most PDP-8 assemblers support a notation for immediate constants.
+
+<PRE WIDTH="60">
+	TAD	(7)	/ add the constant 7
+	JMS I	[PROC]	/ call PROC
+	TAD I	(LOC)	/ add the contents of LOC
+</PRE>
+
+<P>
+If an operand is enclosed in parentheses or square brackets, most PDP-8
+assemblers will treat the operand as a value intended to be used as an
+immediate constant.  To do this, the indicated value is stored in a memory
+location, and the instruction is then assembled with the address of that
+location as an operand.
+
+<P>
+If parentheses are used, the operand is stored at the end of the current
+page, while if square brackets are used, the operand is stored at the end
+of page zero.  All common PDP-8 assemblers will attempt to optimize constant
+storage, checking to see if a constant in question has already been stored
+at the end of the page in question and re-using that constant if so.
+
+<P>
+The usage <code>JMS I [PROC]</code> is a standard way to call an
+off-page procedure.  This allocates a pointer to <code>PROC</code> at the
+end of page zero; this pointer will be used by all other references to
+<code>PROC</code> that are coded the same way.
+
+<P>
+The usage <code>TAD I (LOC)</code> is a standard way to reference a variable
+<code>LOC</code> that is on a different page and that is local in the sense
+that it only concerns a small number of routine.  In this case, a pointer to
+<code>LOC</code> will be allocated at the end of the current page and shared
+only by other references to <code>LOC</code> made from the same page.
+
+<H2><A NAME=macros>Macros</A></H2>
+
+<P>
+The PDP-8 instruction set is so small that many operations that are usually
+single instructions on a larger machine must be performed by instruction
+sequences on the PDP-8.  While these are referred to as macros here, the
+memory resources of the PDP-8 are limited enough that these are usually
+not coded as given, but rather, carefully folded into other computations.
+
+<H3><A NAME="load">Loading the Accumulator</A></H3>
+
+There is no load accumulator instruction on the PDP-8.  As a result,
+if the contents of location <code>M</code> are to be loaded into the
+accumulator, the following instruction sequence should be used:
+
+<PRE WIDTH="60">
+	CLA
+	TAD	M
+</PRE>
+
+In the event that the accumulator is already known to be zero, for
+example, because the previous instruction was a <code>DCA</code>
+operation, the above can be abbreviated to a simple <code>TAD</code>
+instruction.  Other sequences are also effective, for example, it is
+possible to and <code>M</code> with -1 to get the same effect.
+
+<P>
+In general, the PDP-8 does not support immediate operands, but
+there are single-cycle microcoded instructions sequences that
+load commonly used constants in memory.  These are conventionally
+defined using the notation <code>NLXXXX</code> in PAL, where
+<code>XXXX</code> is the octal constant to be loaded.  These are
+usually defined, as needed, at the start of each PAL program:
+
+<PRE WIDTH="60">
+NL0000=	CLA		/    0
+NL0001= CLA IAC		/    1
+NL0002= CLA CLL CML RTL /    2
+NL2000= CLA CLL CML RTR / 1024
+NL3777= CLA CMA CLL RAR / 2047
+NL4000= CLA CLL CML RAR / 2048
+
+NL7777= CLA CMA		/   -1 or 4095
+NL7776= CLA CMA CLL RAL /   -2 or 4094
+NL7775= CLA CMA CLL RTL /   -3 or 4093
+</PRE>
+
+Given these definitions, the instruction <code>NL0001</code>, for
+example, will load 1 in the accumulator.  Note that the instruction
+<code>NL0000</code> is rarely defined or used (it means no more or
+less than CLA), and note that these instructions have ill defined
+effects on the LINK bit.  Some set it, some reset it, and others
+leave it as it was.
+
+<H3><A NAME="logic">Other Logical Operations</A></H3>
+
+The only built in logic operations on the PDP-8 are the not and bitwise and
+operations.  All others must be accomplished using instruction sequences.
+
+<H4>Or</H4>
+
+The most obvious way to or the accumulator with a value <code>M</code> from
+memory is to use De Morgan's law, along with <code>TMP</code>, a temporary
+location.
+
+<PRE WIDTH="60">
+	CMA		/ complement accumulator
+	DCA	TMP	/   TMP = not(AC)
+	TAD	M	/ get value to or with accumulator
+	CMA		/ complement it
+	AND	TMP	/   AC = not(M) and not(TMP)
+	CMA		/ complement result
+</PRE>
+<P>
+A clever alternative is to clear all bits from one operand that are set in the
+other before adding the operands.  If both operands are initially in memory,
+this alternative is faster and no temporary location is needed.
+
+<PRE WIDTH="60">
+	DCA	TMP	/ copy the operand
+	TAD	M
+	AND	TMP	/ AC = bits set in both TMP and M
+	CMA
+	AND	TMP	/ AC = TMP - (bits set in both)
+	TAD	M	/ AC = TMP or M
+</PRE>
+
+<H4>Exclusive Or</H4>
+
+The xor operation is sufficiently complex that a subroutine is usually
+called for.  This operation can be performed using the following
+identity from boolean algebra:
+<PRE WIDTH="60">
+a xor b = (a and not b) or (b and not a)
+</PRE>
+But leads to inefficient code.  A better solution rests on the fact that
+binary addition is based on exclusive or, if only the carry bit can be
+defeated, as follows:
+<PRE WIDTH="60">
+a xor b = (a + b) - 2*(a and b)
+</PRE>
+The second term computes the bits that will cause carrys; these carry
+bits are then subtracted from the sum.  In PDP-8 assembly language, this
+can be done as follows, using <code>TMP</code>, a temporary location.
+
+<PRE WIDTH="60">
+	DCA	TMP
+	TAD	TMP
+	AND	M
+	CMA IAC
+	CLL RAL
+	TAD 	TMP
+	TAD	M
+</PRE>
+
+<H3><A NAME="arithmetic">Other Arithmetic Operations</A></H3>
+
+<H4>Subtract</H4>
+
+To subtract a value <code>M</code> from the accumulator, the value must
+be two's complemented and then added to the accumulator.  This requires
+<code>TMP</code>, a temporary location.
+
+<PRE WIDTH="60">
+	DCA	TMP	/ set aside accumulator
+	TAD	M	/ get value to subtract from it
+	CMA IAC		/ 2's complement it
+	TAD	TMP	/ add back saved value
+</PRE>
+
+It is significantly faster to do reverse subtraction, subtracting the
+accumulator from <code>M</code>, the contents of a memory location,
+leaving the result in the accumulator.
+
+<PRE WIDTH="60">
+	CMA IAC		/ 2's complement accumulator
+	TAD	M	/ add operand from memory
+</PRE>
+
+<H4>Bitcount</H4>
+
+The following algorithm iteratively counts the number
+of one bits in a word W and returns the result in the accumulator:
+
+<PRE WIDTH="60">
+	CLA
+	DCA	TMP
+	TAD	W
+LOOP,	CLL RAR
+	SZL
+	ISZ	TMP
+	SZA
+	JMP	LOOP
+	TAD	TMP
+</PRE>
+
+The above bit of code will, in the worst case, require as many as 12
+iterations of the loop body, at a cost of 6 memory cycles per iteration.
+Loop unrolling can reduce this, as illustrated below:
+<PRE>
+	CLA
+	DCA	TMP
+	TAD	W
+LOOP,	CLL RAR		/ test bit
+	SZL
+	ISZ	TMP
+	CLL RAR		/ test bit
+	SZL
+	ISZ	TMP
+	CLL RAR		/ test bit
+	SZL
+	ISZ	TMP
+	SZA		/ end loop if no more bits
+	JMP	LOOP	/  otherwise iterate
+	TAD	TMP
+</PRE>
+
+<H3><A NAME="block">Block Memory Operations</A></H3>
+
+In the instruction sequences for block operations, the bulk of the code
+is usually concerned with setting up the auto-increment locations used
+to index through the block or blocks being manipulated, and to setup the
+count of words per block.  In all of the following instruction sequences,
+the labels <code>X1</code> and <code>X2</code> are assumed to reference
+autoincrement locations, and <code>TMP</code> is any directly addressable
+temporary, used as a loop counter.  The comments are essentially
+transliterations to C.
+
+<H4>Block Zero</H4>
+The following instruction sequence zeros a block of memory, starting from
+<code>LOC</code> and occupying <code>CNT</code> words.
+
+<PRE WIDTH="60">
+	CLA
+	TAD	LOC-1
+	DCA	X1	/ X1 = LOC-1
+	TAD	-CNT
+	DCA	TMP	/ TMP = -CNT
+
+LOOP,			/ do {
+	DCA I	X1	/   M[++X1] = 0
+	ISZ	TMP	/   TMP++
+	JMP	LOOP	/ } while (TMP!=0)
+</PRE>
+
+<H4>Block Copy</H4>
+The following instruction sequence copies a block of memory from the
+block starting at <code>SRC</code> to the block starting at
+<code>DST</code>; <code>CNT</code> words are
+copied.
+
+<PRE WIDTH="60">
+	CLA
+	TAD	SRC-1
+	DCA	X1	/ X1 = SRC-1
+	TAD	DST-1
+	DCA	X2	/ X2 = DST-1
+	TAD	-CNT
+	DCA	TMP	/ setup TMP = -CNT
+
+LOOP,			/ do {
+	TAD I	X1
+	DCA I	X2	/   M[++X2] = M[++X1]
+	ISZ	TMP	/   TMP++
+	JMP	LOOP	/ } while (TMP!=0)
+</PRE>
+
+</BODY>
+</HTML>

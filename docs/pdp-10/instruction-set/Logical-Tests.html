@@ -1,0 +1,75 @@
+<html><head>
+<!-- Based on MIT PDP-10 'Info' File by ??? -->
+<!-- This html version Copyright (c) 1995 by Henry G. Baker. -->
+<link rev="made" href="mailto:hbaker@netcom.com">
+<title>PDP-10 Logical-Tests</title></head><body>
+MIT PDP-10 'Info' file converted to Hypertext 'html' format by <a href="ftp://ftp.netcom.com/pub/hb/hbaker/home.html">Henry Baker</a><p>
+
+<a href="Byte.html">Previous</a>
+<a href="pdp-10.html">Up</a>
+<a href="Boolean.html">Next</a>
+
+<h1>Logical Testing and Modification.</h1>
+
+The Test instructions are for testing and modifying bits in an
+accumulator.  There are 64 test instructions.  Each one's name is
+T followed by three modifiers.
+
+<pre>
+                 |R right half immediate
+Test accumulator |L left half immediate
+                 |D direct mask
+                 |S swapped mask
+
+                        |N no modification
+                        |Z zero selected bits
+                        |O set selected bits to One
+                        |C complement selected bits
+
+                                |  never skip
+                                |N skip unless all selected bits are zero
+                                |E skip if all selected bits are zero
+                                |A skip always
+</pre>
+
+The test operation considers two 36 bit quantities.  One of these is
+the contents of the selected AC.  The other quantity, called the
+mask, depends on the first modifier letter.  For R the mask is
+&lt;0,,E&gt;; for L it is &lt;E,,0&gt;.  For D the mask is C(E), and for S the
+mask is CS(E), the swapped contents of E.
+
+<ul>
+
+<li>If the skip condition N is specified, then the test instruction will
+skip if the AND of the mask and the AC operand is Not equal to zero.
+
+<li>If the skip condition E is specified, then the test instruction will
+skip if the AND of the mask and the AC operand is Equal to zero.
+
+<li>If the modification code Z appears then bits that are one in mask are
+made zero in the AC.
+
+<li>If the modification code O appears then bits that are one in mask are
+made one in the AC.
+
+<li>If the modification code C appears then bits that are one in mask are
+complemented in the AC.
+</ul>
+
+Note that the skip condition is determined on the basis of the
+contents of the AC before it is modified.<p>
+
+The principle use for the Test instructions is in testing and
+modifying single bit flags that are kept in an accumulator.<p>
+
+
+Example:
+
+<pre>
+        TRON 5,FOOFLG   ;Where FOOGLF has the value 200
+</pre>
+
+This turns on the 200 bit in the right half of accumulator 5,
+and skips if the bit was already on.
+
+</body></html>

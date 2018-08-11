@@ -1,0 +1,248 @@
+<html><head>
+<!-- Based on MIT PDP-10 'Info' File by ??? -->
+<!-- This html version Copyright (c) 1995 by Henry G. Baker. -->
+<link rev="made" href="mailto:hbaker@netcom.com">
+<title>PDP-10 Arith-Tests</title></head><body>
+MIT PDP-10 'Info' file converted to Hypertext 'html' format by <a href="ftp://ftp.netcom.com/pub/hb/hbaker/home.html">Henry Baker</a><p>
+
+<a href="Half-Word.html">Previous</a>
+<a href="pdp-10.html">Up</a>
+<a href="Fixed-Point.html">Next</a>
+
+<h1>Arithmetic testing.  AOBJP, AOBJN, JUMP, SKIP, CAM, CAI, AOS, SOS, SOJ, AOJ</h1>
+
+The AOBJ (Add One to Both halves of AC and Jump) instructions allow
+forward indexing through an array while maintaining a control count
+in the left half of an accumulator.  Use of AOBJN and AOBJP can
+reduce loop control to one instruction.
+
+<pre>
+AOBJN   C(AC)&lt;-C(AC)+&lt;1,,1&gt;; If C(AC)&lt;0 then PC&lt;-E;
+AOBJP   C(AC)&lt;-C(AC)+&lt;1,,1&gt;; If C(AC)&gt;=0 then PC&lt;-E;
+</pre>
+
+Example.  Add 3 to N words starting at location TAB:
+<pre>
+        MOVSI 1,-N              ;Initialize register 1 to -N,,0
+        MOVEI 2,3               ;register 2 gets the constant 3.
+        ADDM 2,TAB(1)           ;add 3 to one array element.
+        AOBJN 1,.-1             ;increment both the index and the control.
+                                ;Loop until the ADDM has been done N times.
+</pre>
+
+By the way, for the sake of consistency, AOBJN should have been called
+AOBJL and AOBJP should have been called AOBJGE.  However, they weren't.<p>
+
+The JUMP instructions compare the selected accumulator to zero and
+jump (to the effective address of the instruction) if the specified
+relation is true.
+
+<pre>
+JUMP            Jump never.  This instruction is a no-op.
+JUMPL           If C(AC) &lt; 0 then PC&lt;-E;
+JUMPLE          If C(AC) &lt;= 0 then PC&lt;-E;
+JUMPE           If C(AC) = 0 then PC&lt;-E;
+JUMPN           If C(AC) # 0 then PC&lt;-E;
+JUMPGE          If C(AC) &gt;= 0 then PC&lt;-E;
+JUMPG           If C(AC) &gt; 0 then PC&lt;-E;
+JUMPA           PC&lt;-E.  This is an unconditional branch.
+</pre>
+
+Example:
+<pre>
+        JUMPLE 5,FOO    ;Jump to FOO if AC 5 is negative or zero.
+</pre>
+
+The SKIP instructions compare the contents of the effective address
+to zero and skip the next instruction if the specified relation is
+true.  If a non-zero AC field appears, the selected AC is loaded from
+memory.
+
+<pre>
+SKIP            If AC#0 then C(AC)&lt;-C(E);
+SKIPL           If AC#0 then C(AC)&lt;-C(E);  If C(E) &lt; 0 then skip
+SKIPLE          If AC#0 then C(AC)&lt;-C(E);  If C(E) &lt;= 0 then skip;
+SKIPE           If AC#0 then C(AC)&lt;-C(E);  If C(E) = 0 then skip;
+SKIPN           If AC#0 then C(AC)&lt;-C(E);  If C(E) # 0 then skip;
+SKIPGE          If AC#0 then C(AC)&lt;-C(E);  If C(E) &gt;= 0 then skip;
+SKIPG           If AC#0 then C(AC)&lt;-C(E);  If C(E) &gt; 0 then skip;
+SKIPA           If AC#0 then C(AC)&lt;-C(E);  skip;
+</pre>
+
+Example:
+<pre>
+        SKIPL FOO       ;Unless FOO's contents are negative,
+         MOVE 1,BAR     ;load BAR's contents into accumulator 1.
+                        ;By convention, instructions which can be
+                        ;are written indented an extra space.
+
+        SKIPN 2,FOO     ;Load FOO's contents into accumulator 2
+                        ;and if they are nonzero, skip the next
+                        ;instruction.
+</pre>
+
+The AOS (Add One to memory and Skip) instructions increment a memory
+location, compare the result to zero to determine the skip condition,
+If a non-zero AC field appears then the AC selected will be loaded
+(with the incremented data).
+
+<pre>
+AOS             Add One to Storage (don't skip).
+                C(E) &lt;- C(E)+1;  If AC#0 then C(AC)&lt;-C(E);
+
+AOSL            Add One and Skip if Less than zero.
+                C(E) &lt;- C(E)+1;  If AC#0 then C(AC)&lt;-C(E);
+                 If C(E) &lt; 0 then skip;
+
+AOSLE           Add One and Skip if Less than or Equal to zero.
+                C(E) &lt;- C(E)+1;  If AC#0 then C(AC)&lt;-C(E);
+                 If C(E) &lt;= 0 then skip;
+
+AOSE            Add One and Skip if Equal to zero.
+                C(E) &lt;- C(E)+1;  If AC#0 then C(AC)&lt;-C(E);
+                 If C(E) = 0 then skip;
+
+AOSN            Add One and Skip if Not zero.
+                C(E) &lt;- C(E)+1;  If AC#0 then C(AC)&lt;-C(E);
+                 If C(E) # 0 then skip;
+
+AOSGE           Add One and Skip if Greater than or Equal to zero.
+                C(E) &lt;- C(E)+1;  If AC#0 then C(AC)&lt;-C(E);
+                 If C(E) &gt;= 0 then skip;
+
+AOSG            Add One and Skip if Greater than zero.
+                C(E) &lt;- C(E)+1;  If AC#0 then C(AC)&lt;-C(E);
+                 If C(E) &gt; 0 then skip;
+
+AOSA            Add One and Skip Always
+                C(E) &lt;- C(E)+1;  If AC#0 then C(AC)&lt;-C(E);
+                 skip;
+</pre>
+
+Example:
+
+<pre>
+;This is the way, in parallel processing,
+;we wait for a lock to be free and then lock it.
+;If the lock is unlocked, it contains -1, so incrementing it yields zero.
+        AOSE FOO        ;Increment FOO's contents, skip if zero.
+         JUMPA .-1      ;If they aren't zero, do it again.
+</pre>
+
+The SOS (Subtract One from memory and Skip) instructions decrement a
+memory location, then compare the result to zero to decide whether to
+skip.  If a non-zero AC field appears then the AC selected will
+be loaded (with the decremented data).<p>
+
+The SOS instructions are just like the AOS instrucrtions except that
+they subtract one instead of adding one.
+
+<pre>
+SOS             Subtract One from Storage (don't skip).
+                C(E) &lt;- C(E)-1;  If AC#0 then C(AC)&lt;-C(E);
+
+SOSL            Subtract One and Skip if Less than zero.
+                Perform SOS instruction:
+                        C(E) &lt;- C(E)-1;  If AC#0 then C(AC)&lt;-C(E);
+                Then, if C(E) &lt; 0 then skip;
+</pre>
+
+The other SOS instructions differ from SOSL only in when they skip.
+
+<pre>
+SOSLE           Subtract One and Skip if Less than or Equal to zero.
+SOSE            Subtract One and Skip if Equal to zero.
+SOSN            Subtract One and Skip if Not zero.
+SOSGE           Subtract One and Skip if Greater than or Equal to zero.
+SOSG            Subtract One and Skip if Greater than zero.
+SOSA            Subtract One and Skip Always
+</pre>
+
+The AOJ (Add One to AC and Jump) instructions increment the contents
+of the selected accumulator.  If the result bears the indicated
+relation to zero then the instruction will jump to the effective
+address.
+
+<pre>
+AOJ             Add One (don't jump).
+                C(AC) &lt;- C(AC)+1;
+
+AOJL            Add One and Jump if Less than zero.
+                C(AC) &lt;- C(AC)+1; If C(AC) &lt; 0 then PC &lt;- E;
+</pre>
+
+The other AOJ instructions differ from AOJL only in how they decide
+whether to jump.
+
+<pre>
+AOJLE           Add One and Jump if Less than or Equal to zero.
+AOJE            Add One and Jump if Equal to zero.
+AOJN            Add One and Jump if Not zero.
+AOJGE           Add One and Jump if Greater than or Equal to zero.
+AOJG            Add One and Jump if Greater than zero.
+AOJA            Add One and Jump Always
+</pre>
+
+The SOJ (Subtract One from AC and Jump) instructions decrement the
+contents of the selected accumulator.  If the result bears the
+indicated relation to zero then the instruction will jump to the
+effective address.
+
+<pre>
+SOJ             Subtract One (don't jump).
+                C(AC) &lt;- C(AC)-1;
+
+SOJL            Subtract One and Jump if Less than zero.
+                C(AC) &lt;- C(AC)-1; If C(AC) &lt; 0 then PC &lt;- E;
+</pre>
+
+The other SOJ instructions differ from SOJL only in how they decide
+whether to jump.
+
+<pre>
+SOJLE           Subtract One and Jump if Less than or Equall to zero.
+SOJE            Subtract One and Jump if Equal to zero.
+SOJN            Subtract One and Jump if Not zero.
+SOJGE           Subtract One and Jump if Greater than or Equal to zero.
+SOJG            Subtract One and Jump if Greater than zero.
+SOJA            Subtract One and Jump Always
+</pre>
+
+The CAM (Compare Accumulator to Memory) class compare the contents of
+the selected accumulator to the contents of the effective address.
+If the indicated condition is true, the instruction will skip.  The
+CAM instruction is suitable for arithmetic comparision of either
+fixed point quantities or normalized floating point quantities.
+Needless to say, for the comparison to be meaningful both C(AC) and
+C(E) should be in the same format (i.e., either both fixed or both
+floating).
+
+<pre>
+CAM             no op (references memory)
+CAML            If C(AC) &lt; C(E) then skip;
+CAMLE           If C(AC) &lt;= C(E) then skip;
+CAME            If C(AC) = C(E) then skip;
+CAMN            If C(AC) # C(E) then skip;
+CAMGE           If C(AC) &gt;= C(E) then skip;
+CAMG            If C(AC) &gt; C(E) then skip;
+CAMA            skip;
+</pre>
+
+The CAI (Compare Accumulator Immediate) class compare the contents of
+the selected accumulator to the value of the effective address.  If
+the indicated condition is true, the instruction will skip.
+An effective address is an 18 bit quantity that is always considered
+to be positive.
+
+<pre>
+CAI             no op
+CAIL            If C(AC) &lt; E then skip;
+CAILE           If C(AC) &lt;= E then skip;
+CAIE            If C(AC) = E then skip;
+CAIN            If C(AC) # E then skip;
+CAIGE           If C(AC) &gt;= E then skip;
+CAIG            If C(AC) &gt; E then skip;
+CAIA            skip;
+</pre>
+
+</body></html>

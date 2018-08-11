@@ -1,0 +1,162 @@
+<html><head>
+<!-- Based on MIT PDP-10 'Info' File by ??? -->
+<!-- This html version Copyright (c) 1995 by Henry G. Baker. -->
+<link rev="made" href="mailto:hbaker@netcom.com">
+<title>PDP-10 PC-Format</title></head><body>
+MIT PDP-10 'Info' file converted to Hypertext 'html' format by <a href="ftp://ftp.netcom.com/pub/hb/hbaker/home.html">Henry Baker</a><p>
+
+<a href="Boolean.html">Previous</a>
+<a href="pdp-10.html">Up</a>
+<a href="Jumps.html">Next</a>
+
+<h1>PC format.</h1>
+
+A subroutine call instruction is one which changes the PC (jumps) but
+stores the old value of the PC so that the subroutine can "return"
+(jump back) when it is done.  There are several subroutine call
+instructions on the PDP-10, but they all store the PC in the same
+format:
+
+<pre>
+ 0 0 0 0 0 0 0 0 0 0 1 1 1 11111 112222222222333333
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 34567 890123456789012345
+ __________________________________________________
+|A|C|C|F|F|U|I|P|A|T|T|F|D|     |                  |
+|R|R|R|O|P|S|O|U|F|R|R|X|C|00000|       PC         |
+|O|Y|Y|V|D|E|T|B|I|A|A|U|K|     |                  |
+|V|0|1| | |R| |L| |P|P| | |     |                  |
+| | | | | | | | | |2|1| | |     |                  |
+|_|_|_|_|_|_|_|_|_|_|_|_|_|_____|__________________|
+</pre>
+
+The right half is the PC proper -- the address of the next instruction
+to be executed (the one which follows the subroutine call
+instruction).  The other individual bits are the status flags.  They
+are stored in case the subroutine wants to restore them when it
+returns.<p>
+
+AROV, ARithmetic OVerflow, is set by any of the following:
+
+<ul>
+<li>        A single instruction has set one of CRY0 or CRY1 without
+                setting them both.
+<li>        An ASH or ASHC has left shifted a significant bit out of
+                AC bit 1.
+<li>        A MULx instruction has multiplied -2^|35 by itself.
+<li>        A DMUL instruction has multiplied -2^|70 by itself.
+<li>        An IMULx instruction has produced a product less than
+                -2^|35 or greater than 2^|35-1.
+<li>        A FIX or FIXR has fetched an operand with exponent
+                greater than 35.
+<li>        FOV (Floating Overflow) has been set.
+<li>        DCK (Divide ChecK) has been set.
+</ul>
+
+CRY0, short for Carry 0, means that there was a carry out of bit 0 in
+an addition.  Note that a carry out of bit 0, with no accompanying
+carry out of bit 1 (into bit 0), causes AROV to be set.<p>
+
+The precise conditions which can set CRY0 and not CRY1 are:
+<ul>
+<li>        An ADDx has added two negative numbers with sum less
+                than -2^|35.
+<li>        A SUBx has subtracted a positive number from a negative
+                number and produced a result less than -2^|35.
+<li>        A SOSx or SOJx has decremented -2^|35.
+</ul>
+
+CRY1, short for Carry 1, means that there was a carry out of bit 1 in
+an addition.  Note that a carry out of bit 1, with no accompanying
+carry out of bit 0, causes AROV to be set.<p>
+
+The precise conditions which can set CRY1 and not CRY0 are:
+<ul>
+<li>        An ADDx has added two positive number with a sum greater
+                than 2^|35-1.
+<li>        A SUBx has subtracted a negative number from a positive
+                number to form a difference greater than 2^|35-1.
+<li>        An AOSx or AOJx instruction has incremented 2^|35-1.
+<li>        A MOVNx or MOVMx has negated -2^|35.
+<li>        A DMOVNx has negated -2^|70
+</ul>
+
+In addition, the following non-overflow conditions set both CRY0 and
+CRY1:
+<ul>
+<li>        In ADDx both summands were negative, or their signs differed
+                and the postive one was greater than or equal to the
+                magnitude of the negative summand.
+<li>        In SUBx the sign of both operands was the same and the AC
+                operand was greater than or equal to the memory
+                operand, or the AC operand was negative and the
+                memory operand was postive.
+<li>        An AOJx or AOSx has incremented -1.
+<li>        A SOJx or SOS has decremented a non zero number other
+                than -2^|35.
+<li>        A MOVNx has negated zero.
+</ul>
+
+FOV, Floating point OVerflow, is set by any of:
+<ul>
+<li>        In a floating point instruction other than FLTR, DMOVNx,
+                or DFN the exponent of the result exceeds 127.
+<li>        FXU (Floating eXponent Underflow) has been set.
+<li>        DCK (Divide ChecK) has been set by FDVx, FDVRx, or DFDV.
+</ul>
+
+FPD, First Part Done, is set when the processor responds to a
+priority interrupt, after having completed the first part of a two
+part instruction (e.g., ILDB).  This flag is not usually of interest
+to the programmer.<p>
+
+USER is set while the processor is in user mode.  In user mode,
+various instruction and addressing restrictions are in effect.<p>
+
+IOT, User IN-Out mode, (also called IOT User), is a special mode in
+which some of the user mode instruction (but not addressing)
+restrictions are removed.  In this mode a user program may perform
+the hardware I/O instructions.<p>
+
+[PUBL, Public mode, signifies that the processor is in user public
+mode or in exec supervisor mode.  This bit exists only on standard
+KL-10 systems;  it is not on ANY ITS system.]<p>
+
+AFI, Address Failure Inhibit, if this flag is set, address break is
+inhibited for during the execution of the next instruction [KI10,
+KL10 only].<p>
+
+TRAP2 - if bit 10 is not also set, pushdown overflow has occurred.
+If traps are enabled, setting this flag immediately causes a trap.
+At present no hardware condition sets both TRAP1 and TRAP2
+simultaneously.  [KI10 KL10 only]<p>
+
+TRAP1 - if bit 9 is not also set, arithemetic overflow has occurred.
+If traps are enabled, setting this flag immediately causes a trap.
+At present no hardware condition sets both TRAP1 and TRAP2
+simultaneously.  [KI10 KL10 only]<p>
+
+FXU, Floating eXponent Underflow, is set to signify that in a
+floating instruction other than DMOVNx, FLTR, or DFN, the exponent of
+the result was less than -128 and AROV and FOV have been set.<p>
+
+DCK, Divide ChecK, signifies that one of the following conditions has
+set AROV:
+
+<ul>
+<li>        In a DIVx the high order word of the dividend was greater than
+                or equal to the divisor.
+<li>        In an IDIVx the divisor was zero.
+<li>        In an FDVx, FDVRx, or DFDV, the divisor was zero, or the
+                magnitude of the dividend fraction was greater than
+                or equal to twice the magnitude of the divisor fraction.
+                In either case, FOV is also set.
+</ul>
+
+Bits 13 through 17 of the PC word are always zero to facilitate the
+use of indirect addressing to return from a subroutine.<p>
+
+Bits 18 through 35 store an address that is one greater than the
+address of the instruction that stores the PC.  Thus, the PC word
+points at the instruction immediately following the subroutine call.
+
+</body></html>

@@ -1,0 +1,85 @@
+<html><head>
+<!-- Based on MIT PDP-10 'Info' File by ??? -->
+<!-- This html version Copyright (c) 1995 by Henry G. Baker. -->
+<link rev="made" href="mailto:hbaker@netcom.com">
+<title>PDP-10 Shifting</title></head><body>
+MIT PDP-10 'Info' file converted to Hypertext 'html' format by <a href="ftp://ftp.netcom.com/pub/hb/hbaker/home.html">Henry Baker</a><p>
+
+<a href="Floating-Point.html">Previous</a>
+<a href="pdp-10.html">Up</a>
+<a href="Byte.html">Next</a>
+
+<h1>Shift instructions</h1>
+
+The following instructions shift or rotate the AC or the double word
+formed by AC and AC+1.<p>
+
+Shift instructions are all immediate instructions.  The effective
+address is not used as the ddress of a memory operand.  Instead, it is
+used as the number of places to shift.  A positive number means a left
+shift; a negative number (bit 18 = 1) means a right shift.<p>
+
+Aside from the sign bit of the effective address, only the lowest
+eight bits are used.  The other nine bits are ignored.
+
+<ul>
+<li>LSH     Logical Shift.  C(AC) is shifted as specified by E.  Zero
+        bits are shifted into the AC.
+
+<li>LSHC    Logical Shift Combined.  C(AC AC+1) is shifted as a 72 bit
+        quantity.  Zero bits are shifted in.
+
+<li>ASH     Arithmetic Shift.  Bit 0 is not changed.  In a left
+        shift zero bits are shifted into the right end of AC.
+        In a left shift, if any bit of significance is shifted
+        out of bit 1, AROV (overflow) is set.  In a right shift,
+        bit 0 is shifted into bit 1.
+
+<li>ASHC    Arithmetic Shift Combined.  AC bit 0 is not changed.  If
+        E is non zero, AC bit 0 is copied to AC+1 bit 0.
+        C(AC AC+1) is shifted as a 70 bit quantity.  In a left
+        shift zero bits are shifted into the right end of AC+1.
+        In a left shift, if any bit of significance is shifted
+        out of AC bit 1 then AROV is set.  In a right shift AC
+        bit 0 is shifted into AC bit 1.
+
+<li>ROT     Rotate.  The 36 bit C(AC) is rotated.  In a left rotate bits
+        shifted out of bit 0 are shifted into bit 35.  In a right
+        rotate, bit 35 is shifted into bit 0.
+
+<li>ROTC    Rotate Combined.  AC and AC+1 are rotated as a 72 bit
+        quantity.  In a left rotate AC bit 0 shifts into AC+1
+        bit 35 and AC+1 bit 0 shifts into AC bit 35.  In a right
+        rotate, AC+1 bit 35 shifts into AC bit 0, etc.
+
+<li>JFFO    Jump if Find First One.  This is not actually a shift
+        instruction, but it is a related sort of thing.  It counts the
+        number of leading zeros in the contents of AC, and stores this
+        number in AC+1.  (If AC contains zero, the number stored in
+        AC+1 is zero, not 36).  The instruction also jumps to its
+        effective address if C(AC) # 0 (in other words, if it
+        succeeded in finding the first one bit).
+</ul>
+
+Example:
+
+<pre>
+;Suppose that each bit in accumlator 1 is a flag
+;telling us that some sort of processing needs to be done.
+;We would like to find out which flags are set
+;and, for each one, do the processing.  But we don't want to
+;waste a lot of time checking flags which are not set.
+
+LOOP:   JFFO 1,[JRST @TABLE(2)]
+        ...                     ;Here all flags are zero.
+
+TABLE:  FOO                     ;FOO handles flag bit 0
+        BAR                     ;BAR handles flag bit 1.
+        ...                     ;Other addresses for the remaining
+flags.
+
+FOO:    ...                     ;Do the work.
+        TLZ 1,400000            ;Clear flag bit 0
+        JRST LOOP               ;Find the next flag which is set.
+</pre>
+</body></html>

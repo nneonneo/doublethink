@@ -1,0 +1,110 @@
+<html><head>
+<!-- Based on MIT PDP-10 'Info' File by ??? -->
+<!-- This html version Copyright (c) 1995 by Henry G. Baker. -->
+<link rev="made" href="mailto:hbaker@netcom.com">
+<title>PDP-10 FileIO</title></head><body>
+MIT PDP-10 'Info' file converted to Hypertext 'html' format by <a href="ftp://ftp.netcom.com/pub/hb/hbaker/home.html">Henry Baker</a><p>
+
+<a href="Calculator.html">Previous</a>
+<a href="pdp-10.html">Up</a>
+<a href="Parsing.html">Next</a>
+
+<h1>Reading and Writing Files.</h1>
+
+As a preface to this example, several things need to be explained.
+In the foregoing examples, only terminal I/O has been discussed.
+Here we introduce disk file input.  One important thing to emphasize
+is the concept of device independence: most of the system calls for
+disk i/o are the same as those for say, magtape i/o.  Naturally,
+different devices have different phyical characteristics; therefore,
+some differences between devices will be apparent.  Despite these
+differences, a programmer really needs to learn only one set of basic
+concepts for i/o.<p>
+
+When doing i/o it is necessary to specify a physical device, a mode
+(input vs. output, character vs. word), and possibly a file name to
+select among "files" on a particular physical device.<p>
+
+Each job can has sixteen i/o channels available, each of which can be
+opened individually to do i/o.  The same OPEN system call used to open
+a tty channel is also used to open i/o channels for other devices.
+OPEN also specifies the mode and filenames.<p>
+
+You have already seen the use of modes .UAI (unit ascii input) and
+.UAO (unit ascii output).  Modes .UII and .UIO are "image" i/o instead
+of ascii i/o.  They transfer whole words instead of characters, and
+are used for binary files.<p>
+
+There are two filenames, and also a directory name.  These are
+specified as words of SIXBIT just like the device name.<p>
+
+Once the channel is open, the .IOT UUO is used to transfer the
+characters in or out, just as it is with the terminal.  In fact, the
+above examples could be adapted to read and write input using disk
+files only by changing the two OPEN system calls.  Alternatively,
+filename translations could be used to translate device TTY: to a disk
+file.<p>
+
+Writing output to a file does require one thing that writing output to
+the terminal does not need: you must "close" the channel when you are
+finished to make the file appear properly on disk.  Closing a terminal
+i/o channel is also allowed but nobody bothers since it is not
+necessary.  Closing is done with the .CLOSE UUO, which takes the
+channel number in its AC field just like .IOT.<p>
+
+Here is an example which copies the file SYS;SYSTEM MAIL (the announcements
+printed when DDT or PWORD starts up) to the file FOO BAR on your own directory.
+
+<pre>
+        TITLE   FILE COPY
+A=1
+
+CHDSKI==1
+CHDSKO==2
+
+FCOPY:  .CALL [ SETZ ? SIXBIT/OPEN/
+                [.UAI,,CHDSKI] ? [SIXBIT/DSK/]  ;Mode, channel and device name
+                [SIXBIT /SYSTEM/] ? [SIXBIT/MAIL/]      ;Two filenames.
+                400000,,[SIXBIT /SYS/]]                 ;Directory name.
+         .LOSE %LSFIL
+        .CALL [ SETZ ? SIXBIT/OPEN/
+                [.UAO,,CHDSKO] ? [SIXBIT/DSK/]
+                [SIXBIT /FOO/] ? 400000,,[SIXBIT/BAR/]] ;Note no directory name
+!
+                                ;The default (your working directory) is used.
+         .LOSE %LSFIL
+LOOP:   .IOT CHDSKI,A           ;Read next input character.
+        JUMPL A,EOF             ;Negative =&gt; there is none, it's eof.
+        .IOT CHDSKO,A           ;Else write char to output file.
+        JRST LOOP
+
+EOF:    .CLOSE CHDSKO,          ;Make output file appear.
+        .CLOSE CHDSKI,          ;Release input file (to be clean).
+        .LOGOUT 1,
+
+        END FCOPY
+</pre>
+
+<h2>NOTES:</h2>
+
+<ul>
+<li>This example is so simple that no stack is needed, and no tty channels.
+
+<li>When reading from a file instead of the terminal, it is possible to reach th
+e
+end of the file.  In ascii mode (.UAI), this is signalled by a negative value
+returned by the .IOT.  The right halfword of that value contains the character
+^C, which is the standard end-of-file padding character on ITS.  That is, ^C is
+used to fill out the last word of a file of characters if that last word is not
+entirely used up.  In image mode, .IOT causes an error interrupt at end of file
+.
+Usually binary files are read many words at a time using SIOT (which will be
+explained soon) or block-mode .IOT; these do provide a way to detect end of fil
+e
+without getting an error.
+
+<li>.LOGOUT 1, is a convenient way to exit a program and kill the job.  It kills
+the job if it is running under DDT (the usual condition) and also kills the job
+if it is disowned.  When a program running under DDT does a .LOGOUT 1, DDT just
+prints an asterisk.
+</ul></body></html>

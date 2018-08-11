@@ -1,0 +1,505 @@
+
+
+
+
+
+
+
+
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+
+<HTML LANG="en">
+ <HEAD>
+  <TITLE>PDP-8 Console Teletype Instructions</TITLE>
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+  <META name="viewport" content="width=device-width, initial-scale=1">
+  <META name="Author" content="Douglas W. Jones">
+  <META name="Language" content="English">
+  <META name="editor" content="/usr/bin/vi">
+  
+  
+  
+  <STYLE TYPE="text/css">
+   BODY { margin-left: 3%; margin-right: 3%; }
+   H2.SQUAT { margin-top: 0.4em; margin-bottom: 0.25em; }
+   H3.SQUAT { margin-top: 0.3em; margin-bottom: 0.2em; }
+   H4.SQUAT { margin-top: 0.2em; margin-bottom: 0.15em; }
+   H5.SQUAT { margin-top: 0.17em; margin-bottom: 0.15em; }
+   * { line-height: 1.1 }
+   P.SQUAT { margin-top: 0.25em; margin-bottom: 0.15em; }
+   UL.SQUAT { margin-top: 0.25em; margin-bottom: 0.15em; }
+   EM.O { font-style: normal; text-decoration: overline; }
+   EM.U { font-style: normal; text-decoration: underline; }
+   EM.S { font-style: normal; text-decoration: line-through; }
+   A { text-decoration: none; }
+   A.I { font-style: italic; text-decoration: none; }
+   SUP { vertical-align: 0; position: relative; bottom: 1ex; }
+   SUB { vertical-align: 0; position: relative; top: 0.8ex; }
+   TABLE.BOXY { border: 0; padding: 0; border-spacing: 0;
+                border-collapse: collapse; }
+   TD.BOX { border: solid; border-width: thin; border-color: DimGray;
+	      text-align: center; }
+   TD.BOXTT { border: solid; border-width: thin; border-color: DimGray;
+	      font-family: monospace; text-align: center; }
+   TD.TT { font-family: monospace; text-align: left; }
+   TD.TTSPACE { font-family: monospace; text-align: left; color: white }
+   TD.SHADE { background: Silver; text-align: center; }
+   CAPTION { padding-top: 6px; }
+   DIV.HEADBOX { border: groove; border-width: 2px; background: #F0F0E0; padding-top: 1%; padding-bottom: 1%; padding-left: 5px; }
+   DIV.HEADBOX P { margin-top: 0.8em; margin-bottom: 0.8em; }
+   DIV.HEADBOX H1 { margin-top: 0.2em; margin-bottom: 0.4em; }
+   DIV.HEADBOX H2 { margin-top: 0.2em; margin-bottom: 0.4em; }
+   DIV.INDENT { border: none; padding-left: 1em }
+   DIV.INVISIBLE { font-size: 3px; letter-spacing: -5px; color: white; background: white; }
+   DIV.INVISIBLE A:link { color: white; }
+   DIV.INVISIBLE A:visited { color: white; }
+   DIV.INVISIBLE A:active { color: white; }
+   DIV.invisible A:active { color: white; background: white; }
+  </STYLE>
+ </HEAD>
+ <BODY BGCOLOR="#FFFFFF" TEXT="#000000" link="#0000CC" vlink="#880088" alink="#880088">
+  <DIV CLASS=HEADBOX>
+   
+     <IMG SRC="http://www.cs.uiowa.edu/~jones/pdp8/logos/pdp8.gif"
+      HEIGHT="65"
+      WIDTH="65"
+      ALT="(none)"
+      HSPACE="5"
+      ALIGN=left
+     >
+     <IMG SRC="http://www.cs.uiowa.edu/~jones/transpix.gif"
+      ALT=" "
+      WIDTH="75%"
+      HEIGHT="1"
+     >
+    <DIV>
+   
+   <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0"><TR><TD>&nbsp;&nbsp;<TD>
+    
+     <H1>The Digital Equipment Corporation PDP-8</H1>
+    
+    
+     <H2>Console Teletype Instructions</H2>
+    
+    <P>
+    
+     Part of <A HREF="index.html">
+      
+      the PDP-8 Programmer's Reference Manual
+      
+     </A>
+     <BR>
+     
+    
+    
+     by
+     <A HREF="http://www.cs.uiowa.edu/~jones/">Douglas W. Jones</A>
+     
+     <BR>
+    
+    
+    <A HREF="http://www.uiowa.edu/">
+     T<SMALL>HE</SMALL> U<SMALL>NIVERSITY</SMALL>
+    <SMALL>OF</SMALL> I<SMALL>OWA</SMALL></A>
+    <A HREF="http://www.cs.uiowa.edu/">Department&nbsp;of&nbsp;Computer&nbsp;Science</A>
+    
+    
+    
+   </TABLE>
+    
+     </DIV>
+    
+  </DIV>
+ 
+
+
+
+<P>
+This document describes the console teletype interface of early PDP-8
+models, the KL8E (M865 and M8650) asynchronous interface, and the KL8JA
+(M8655) asynchronous interface.  The console terminal and asynchronous
+line interfaces on the VT78 were upward compatable from the interface
+described here.  The LC8E (M8329) parallel DECwriter interface is also
+compatable.
+
+<H2>Index</H2>
+<UL>
+<LI><A HREF="tty.html#registers">Device Registers</A>.
+<LI><A HREF="tty.html#format">Instruction Format and Device Addresses</A>.
+<LI>Input Instructions (device xx).
+<BR><A HREF="tty.html#kcf">6xx0 - KCF Keyboard Clear Flags</A>.
+<BR><A HREF="tty.html#ksf">6xx1 - KSF Keyboard Skip if Flag</A>.
+<BR><A HREF="tty.html#kcc">6xx2 - KCC Keyboard Clear and read Character</A>.
+<BR><A HREF="tty.html#krs">6xx4 - KRS Keyboard Read Static</A>.
+<BR><A HREF="tty.html#kie">6xx5 - KIE Keyboard Interrupt Enable</A>.
+<BR><A HREF="tty.html#krb">6xx6 - KRB Keyboard Read and Begin next read</A>.
+<LI>Output Instructions (device yy).
+<BR><A HREF="tty.html#tfl">6yy0 - TFL Teleprinter Flag set</A>.
+<BR><A HREF="tty.html#tsf">6yy1 - TSF Teleprinter Skip if Flag</A>.
+<BR><A HREF="tty.html#tcf">6yy2 - TCF Teleprinter Clear Flag</A>.
+<BR><A HREF="tty.html#tpc">6yy4 - TPC Teleprinter Print Character</A>.
+<BR><A HREF="tty.html#tsk">6yy5 - TSK Teleprinter Skip</A>.
+<BR><A HREF="tty.html#tls">6yy6 - TLS Teleprinter Load and Start</A>.
+<LI><A HREF="tty.html#conventions">programming conventions</A>.
+</UL>
+
+<HR>
+
+<H2><A NAME=registers>Device Registers</A></H2>
+
+The console teletype interfaceand other asynchronous device interfaces
+consist of two largely independent devices, described conventionally as the
+keyboard input device and the teleprinter output device.  The computer
+interacts with these devices through 16 IOT instructions; these instructions,
+in turn, reference the registers described below.
+<P>
+Note:  Most of these registers are accessed via the accumulator; such registers
+are illustrated as their contents appears when loaded in the accumulator.
+
+<H3>Keyboard Buffer</H3>
+
+<PRE WIDTH="60">
+            00 01 02 03 04 05 06 07 08 09 10 11
+            ___________________________________
+           |  |  |  |  |  |  |  |  |  |  |  |  |
+           |__|__|__|__|__|__|__|__|__|__|__|__|
+           |           |                       |
+           |ER PE FE OE|    Keyboard Buffer    |
+           |  Status   |                       |
+</PRE>
+The keyboard buffer register holds the character most recently read from the
+asynchronous input channel.  While a character is being read, the contents
+of this register are unpredictable.
+<P>
+The status field is only supported by the KL8JA (M8655) asynchronous interface,
+and then, only if the SWD jumper is present and if the device control register
+is set to enable status reporting.  The status bits are:
+<UL>
+<LI><TT>ER --</TT> Set if any error was detected.
+<LI><TT>PE --</TT> Set for parity errors.
+<LI><TT>FE --</TT> Set for framing errors.
+<LI><TT>OE --</TT> Set for data overrun errors.
+</UL>
+If the status field is not present or status reporting is disabled, these
+bits are zero.
+
+<H3>Keyboard Flag</H3>
+
+The keyboard flag bit is set when a character has been read into the keyboard
+buffer.  The console-reset or power-on operation clears this flag.  If
+interrupts are enabled, this flag generates an interrupt request when set.
+
+<H3>Teleprinter Buffer</H3>
+
+<PRE WIDTH="60">
+            00 01 02 03 04 05 06 07 08 09 10 11
+            ___________________________________
+           |  |  |  |  |  |  |  |  |  |  |  |  |
+           |__|__|__|__|__|__|__|__|__|__|__|__|
+           |           |                       |
+           |  Ignored  |    Keyboard Buffer    |
+</PRE>
+The teleprinter buffer register holds the character that is to be output
+to the asynchronous interface.  Modifying this register while it is being
+used to generate output may produce unpredictable results, but on early
+models of the asynchronous interfaces (prior to the M8655), repeatedly
+writing zero to this register was an effective way to emulate the pressing
+of the break key on a teletype.
+
+<H3>Teleprinter Flag</H3>
+
+The teleprinter flag bit is set when the character most recently loaded in
+the teleprinter buffer has been output.  The console-reset or power-on
+operation clears this flag.  If interrupts are enabled, this flag generates
+an interrupt request when set.
+
+<H3>Device Control Register</H3>
+
+<PRE WIDTH="60">
+            00 01 02 03 04 05 06 07 08 09 10 11
+            ___________________________________
+           |  |  |  |  |  |  |  |  |  |  |  |  |
+           |__|__|__|__|__|__|__|__|__|__|__|__|
+           |                             |     |
+           |           ignored           |SE IE|
+</PRE>
+
+This register is not present in PDP-8 console interfaces prior to the PDP-8/E
+and the KL8E (M865 and M8650) only supports the IE bit, while the KL8JA (M8655)
+supported both bits.
+
+<UL>
+<LI><TT>IE --</TT> Interrupt Enable
+<LI><TT>SE --</TT> Status Enable
+</UL>
+
+<H2><A NAME=format>Instruction Format and Device Addresses</A></H2>
+
+<PRE WIDTH="60">
+            00 01 02 03 04 05 06 07 08 09 10 11
+            ___________________________________
+           | 1| 1| 0|  |  |  |  |  |  |  |  |  |
+           |__|__|__|__|__|__|__|__|__|__|__|__|
+           |        |                 |        |
+           |  IOT   |      Device     |   Op   |
+</PRE>
+The console teletype is usually connected as devices 03 and 04, however,
+the KL8/E (M8650) interface common on the PDP-8/E and later models could
+be jumpered to support any two device codes.  The following table
+lists the most commonly used device codes for serial interfaces:
+<PRE WIDTH="60">
+                          |  input | output |
+                          |   xx   |   yy   |
+           ---------------|--------|--------|
+           Console TTY    |   03   |   04   |
+           Second TTY     |   40   |   41   |
+           Serial printer |   65   |   66   |
+           ---------------|--------|--------|
+           VT78 serial #1 |   30   |   31   |
+           VT78 serial #2 |   32   |   33   |
+           ---------------|--------|--------|
+           DECmate printer|   32   |   33   |
+</PRE>
+By convention, no matter what device codes are used, the input device code x
+is always one less than the output device code y.  The serial printer port
+at address 66 is a special case; 66 is the address commonly used for the
+parallel printer interface, and by a combination of luck and crafty design,
+the commonly used coding conventions for output to a parallel printer happen
+to work for a serial interface.
+
+<H2>Input Instructions</H2>
+
+<H3><A NAME=kcf>6xx0 - KCF</A> Keyboard Clear Flags</H3>
+
+<PRE WIDTH="60">
+	KCF
+</PRE>
+<P>
+The keyboard flag, signalling input data ready, is cleared.  This operation
+is not supported by the console interfaces on PDP-8 models prior to the
+PDP-8/E, and thus should be avoided in portable code.
+
+<H3><A NAME=ksf>6xx1 - KSF</A> Keyboard Skip if Flag</H3>
+
+<PRE WIDTH="60">
+	KSF
+</PRE>
+<P>
+If the keyboard flag is set, indicating that input data is ready, the next
+instruction in sequence is skipped.  All PDP-8 console interfaces support
+this operation.
+<P>
+On the DECmates, this operaton resets the flag, and the flag cannot be set
+again until the character has been read out of the keyboard buffer.  This is
+a source of some compatability problems!
+
+<H3><A NAME=kcc>6xx2 - KCC</A> Keyboard Clear and read character </H3>
+
+<PRE WIDTH="60">
+	KCC
+</PRE>
+<P>
+The keyboard flag is reset, the accumulator is cleared, and the process of
+reading the next character of input is initiated (in those cases where the
+interface is connected to a paper-tape reader).  All PDP-8 console interfaces
+support this operation.
+
+<H3><A NAME=krs>6xx4 - KRS</A> Keyboard Read Static</H3>
+
+<PRE WIDTH="60">
+	KRS
+</PRE>
+<P>
+The 8-bit character in the keyboard buffer is ored with the accumulator.
+All PDP-8 console interfaces support this operation.
+
+<H3><A NAME=kie>6xx5 - KIE</A> Keyboard Interrupt Enable</H3>
+
+<PRE WIDTH="60">
+	KIE
+</PRE>
+
+<P>
+The accumulator is loaded into the device control register (the interrupt
+enable and status report control bits).  This operation is not supported
+by the console interfaces on PDP-8 models prior to the PDP-8/E, and thus
+should be avoided in portable code.
+
+<H3><A NAME=krb>6xx6 - KRB</A> Keyboard Read and begin next read</H3>
+
+<PRE WIDTH="60">
+	KRB
+</PRE>
+
+<P>
+The 8 bit character in the keyboard buffer is transferred to the accumulator,
+and the keyboard flag is cleared, allowing the reading of the next character
+to begin.  In effect, this operation combines the <code>KCC</code> and
+<code>KRS</code> operations; in early PDP-8 models, this was implemented as
+a microcoded combination of these operations.
+All PDP-8 console interfaces support this operation.
+
+<H2>Output Instructions</H2>
+
+<H3><A NAME=tfl>6yy0 - TFL</A> Teleprinter Flag set</H3>
+
+<PRE WIDTH="60">
+	TFL
+</PRE>
+
+<P>
+The printer flag, signalling output complete, is set.  This operation
+is not supported by the console interfaces on PDP-8 models prior to the
+PDP-8/E, and thus should be avoided in portable code.
+
+<H3><A NAME=tsf>6yy1 - TSF</A> Teleprinter Skip if Flag</H3>
+
+<PRE WIDTH="60">
+	TSF
+</PRE>
+
+<P>
+If the printer flag is set, indicating output is complete, the next
+instruction in sequence is skipped.  All PDP-8 console interfaces support
+this operation.
+
+<H3><A NAME=tcf>6yy2 - TCF</A> Teleprinter Clear Flag</H3>
+
+<PRE WIDTH="60">
+	TCF
+</PRE>
+
+<P>
+The printer flag is reset.  All PDP-8 console interfaces
+support this operation.
+
+<H3><A NAME=tpc>6yy4 - TPC</A> Teleprinter Print Character</H3>
+
+<PRE WIDTH="60">
+	TPC
+</PRE>
+
+<P>
+The least significant 8-bits of the accumulator is copied to the print
+buffer, initiating output.  All PDP-8 console interfaces support this
+operation.
+
+<H3><A NAME=tsk>6yy5 - TSK</A> Teleprinter Skip</H3>
+
+<PRE WIDTH="60">
+	TSK
+</PRE>
+
+<P>
+If either the print flag or the keyboard flag are set, the next instruction
+in sequence is skipped.  This operation is not supported by the console
+interfaces on PDP-8 models prior to the PDP-8/E, and thus should be avoided
+in portable code.
+
+<H3><A NAME=tls>6yy6 - TLS</A> Teleprinter Load and start</H3>
+
+<PRE WIDTH="60">
+	TLS
+</PRE>
+
+<P>
+The least significant 8 bits of the accumulator are copied to the print buffer,
+initiating output, and the printer flag is reset.
+In effect, this operation combines the <code>TCF</code> and
+<code>TPC</code> operations; in early PDP-8 models, this was implemented as
+a microcoded combination of these operations.
+All PDP-8 console interfaces support this operation.
+
+
+<H2><A NAME=conventions>Programming Conventions</A></H2>
+
+Typical PDP-8 assembly language programs begin by defining the necessary
+IOT instructions.  In the case of console terminal input-output, most PDP-8
+assemblers predefine these symbols appropriately, as follows:
+<PRE>
+	KSF=	6031	/ Keyboard Skip if Flag
+	KCC=	6032	/ Keyboard Clear and read Character
+	KRS=	6034	/ Keyboard Read Static
+	KRB=	6036	/ Keyboard Read and Begin next read
+	TSF=	6041	/ Teleprinter Skip if Flag
+	TCF=	6042	/ Teleprinter Clear Flag
+	TPC=	6044	/ Teleprinter Print Character
+	TLS=	6046	/ Teleprinter Load and Start
+</PRE>
+<P>
+One problem with the design of the TTY interface is that the teleprinter flag,
+like all device flags, is cleared on reset and powerup, but for many purposes,
+it would be better to have this flag set, indicating that, at startup time,
+the teleprinter buffer register is ready to receive one character of output.
+The traditional startup code accomplishes this by outputting a null:
+<PRE>
+	/ initialize the teletype for output
+		CLA
+		TLS		/ output null
+</PRE>
+On the PDP-8/E and more recent machines, the need to output a character
+as part of the startup sequence was eliminated by the introduction of the
+<TT>TFL</TT> instruction.  This can be substituted for the above in code
+intended only for use only on the PDP-8/E and later machines.
+<P>
+Given this initialization, the following two subroutines (or variations
+on them) are commonly used in most PDP-8 programs for polled console
+input-output:
+<PRE>
+	TTYIN,	.-.		/Read from TTY
+	/			  returns character in ac
+	TTYILP,	KSF		/ await input ready
+		JMP	TTYILP
+		KRB		/ read character
+		JMP I	TTYIN
+
+	TTYOUT,	.-.		/Write to TTY
+	/			  given character in ac
+	TTYOLP,	TSF		/ await input ready
+		JMP	TTYOLP
+		TLS		/ write character
+		JMP I	TTYOUT
+</PRE>
+When writing programs to support multiple I/O ports, the following alternative
+definitions for devcde I/O instructions and device addresses are appropriate:
+<PRE>
+	KSF=	6001	/ Keyboard Skip if Flag
+	KCC=	6002	/ Keyboard Clear and read Character
+	KRS=	6004	/ Keyboard Read Static
+	KRB=	6006	/ Keyboard Read and Begin next read
+	TSF=	6011	/ Teleprinter Skip if Flag
+	TCF=	6012	/ Teleprinter Clear Flag
+	TPC=	6014	/ Teleprinter Print Character
+	TLS=	6016	/ Teleprinter Load and Start
+
+	TTY=	0030	/ the console TTY
+	LPR=	0650	/ the printer port
+</PRE>
+These definitions allow coding an operation for a particular device as, for
+example, <TT>KSF+TTY</TT> to check the console TTY keyboard input flag, and
+they allow use of reasonably clear self-modifying code for general-purpose
+I/O routines, as is illustrated in the following variation on the teletype
+output routine previously given:
+<PRE>
+	TTYOUT, .-.             /Write to TTY
+	/                         given character in ac
+	/			  device address inline
+		DCA	TMP	/ set aside the character
+		TAD I	TTYOUT	/ get the device address
+		TAD	(TSF)	/  fix a TSF instruction
+		DCA	TTYOLP	/  plant it in the code
+		TAD I	TTYOUT	/ get the device address
+		TAD	(TLS)	/  fix a TLS instruction
+		DCA	TTYTLS	/  plant it in the code
+		ISZ	TTYOUT  / advance over param
+	TTYOLP, TSF             / await input ready
+		JMP     TTYOLP
+		TAD	TMP	/ recover character
+	TTYTLS, TLS             /  and write it out
+		JMP I   TTYOUT
+</PRE>
+
+</BODY>
+</HTML>

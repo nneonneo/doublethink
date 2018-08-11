@@ -1,0 +1,122 @@
+<html><head>
+<!-- Based on MIT PDP-10 'Info' File by ??? -->
+<!-- This html version Copyright (c) 1995 by Henry G. Baker. -->
+<link rev="made" href="mailto:hbaker@netcom.com">
+<title>PDP-10 BufPadding</title></head><body>
+MIT PDP-10 'Info' file converted to Hypertext 'html' format by <a href="ftp://ftp.netcom.com/pub/hb/hbaker/home.html">Henry Baker</a><p>
+
+<a href="BufInput.html">Previous</a>
+<a href="pdp-10.html">Up</a>
+<a href="Debugging.html">Next</a>
+
+<h1>Buffered Input, Ignoring Padding.</h1>
+
+Sometimes it is desirable to ignore padding (^@ and ^C characters) at
+the end of a file, but to consider ^@ and ^C characters within the
+file to be significant.  The convention usually used is that ^@ and
+^C characters are only padding if they occur as the last few
+characters in the last word of the file.  A ^L character in the last
+word followed only by ^C's or ^@'s is also to be ignored.  Here is a
+routine which claims to have hit end of file when it reaches the
+padding.<p>
+
+This routine works by saving the last word of each buffer load to be
+processed at the front of the next buffer load.  That is so that, when
+we discover end of it is guaranteed that we have not yet processed the
+last word of the file.  So once we KNOW it is the last word, we can
+look through it for padding and discard what we find.<p>
+
+It is necessary to call the subroutine GETINI before reading the first
+character of input.
+<pre>
+INBFR:  BLOCK INBFL             ;This is the buffer.  40 to 200 is
+                                ;good for INBFL (160. to 640. characters).
+
+INCNT:  0                       ;Number of characters left in buffer
+                                ;not fetched yet.
+INPTR:  0                       ;Byte pointer used for fetching characters
+
+INAHED: 0                       ;Look-ahead word.
+                                ;The last word of previous bufferful
+                                ;saved for the next bufferful.
+INEOF:  0                       ;-1 if this bufferful is the last.
+
+;Read another input character into A.
+;Skip if successful.  No skip if EOF.
+GETCHR: SOSL INCNT              ;Anything left in the buffer?
+         JRST GETCH1            ;Yes =&gt; just get it.
+        SKIPE INEOF             ;If we discovered last time that there
+         POPJ P,                ;is no more, it's eof now.
+        PUSHJ P,GETBUF          ;Fill up the buffer again.
+        JRST GETCHR
+
+GETCH1: ILDB A,INPTR
+        AOS (P)
+        POPJ P,
+
+;Call this to initialize the buffer, before reading the first character.
+;This is to ignore the look-ahead word,
+;which is garbage the first time around.
+GETINI: SETZM INEOF
+        SETZM INCNT
+        PUSHJ P,GETCHR          ;So just read and throw away
+        PUSHJ P,GETCHR          ;the supposed look-ahead chars.
+        PUSHJ P,GETCHR
+        PUSHJ P,GETCHR
+        PUSHJ P,GETCHR
+        POPJ P,
+
+GETBUF: PUSH P,A
+        PUSH P,B
+        MOVE A,INAHED           ;Our previous look ahead word is now
+        MOVEM A,INBFR           ;our first word of input.
+        MOVE A,[440700,,INBFR]  ;That's where we should start fetching.
+        MOVEM A,INPTR
+        HRLI A,010700           ;The SIOT should start AFTER that word.
+;Note that it is essential that we set up A with
+;010700,,INBFR rather than 440700,,INBFR+1
+;because of how GETCH4 decrements the byte pointer.
+;We are being compatible with SIOT, which also returns
+;a byte pointer of the form 010700 rather than 440700.
+        MOVEI B,INBFL*5-5       ;from the file, but not that word.
+        ;; Do the input.  A says where to put it and B says how many chars.
+        .CALL [ SETZ ? SIXBIT /SIOT/ ? %CLIMM,,INCHAN
+                        A ? 400000,,B]
+         .LOSE %LSFIL
+        JUMPE B,GETCH2          ;Didn't get all we asked for =&gt;
+         SETOM INEOF            ; this is the last we will get.
+        MOVNS B                 ;B is left with number of characters
+        ADDI B,INBFL*5          ;we wanted but didn't get.
+        MOVEM B,INCNT           ;Compute how many chars we did get.
+;We are now certainly at eof, and the last word of the file
+;is now in the buffer.
+GETCH4: ADD A,[070000,,]        ;Back up to last character.
+        JUMPL A,GETCH3          ;When we get to left edge of word,
+                                ;we have examined the entire last word,
+                                ;so there is no more padding.
+        LDB B,A
+        CAIE B,^C               ;Any number of ^@ and ^C chars is padding.
+         CAIN B,^@
+          JRST [ SOS INCNT      ;So officially say it is not there.
+                 JRST GETCH4]
+        CAIN B,^L               ;A ^L followed by padding is padding
+         SOS INCNT              ;but nothing before it is padding.
+        JRST GETCH3
+
+;If we did fill the buffer, we must save one word as look-ahead
+;for next time.
+GETCH2: MOVE A,INBFR+INBFL-1    ;Save the last word we got.
+        MOVEM A,INAHED
+        MOVEI A,INBFL*5-5       ;Don't include those 5 chars
+        MOVEM A,INCNT           ;in the count of how many are in the bfr.
+GETCH3: POP P,B
+        POP P,A
+        POPJ P,
+</pre>
+
+Both of these examples are suited to reading input from a disk file.
+If you are reading input from the terminal, you probably want to do
+rubout processing for the user's sake.  There is a library you can use
+for this; read the file SYSENG;RUBOUT &gt;.
+
+</body></html>

@@ -1,0 +1,122 @@
+<html><head>
+<!-- Based on MIT PDP-10 'Info' File by ??? -->
+<!-- This html version Copyright (c) 1995 by Henry G. Baker. -->
+<link rev="made" href="mailto:hbaker@netcom.com">
+<title>PDP-10 Jumps</title></head><body>
+MIT PDP-10 'Info' file converted to Hypertext 'html' format by <a href="ftp://ftp.netcom.com/pub/hb/hbaker/home.html">Henry Baker</a><p>
+
+<a href="PC-Format.html">Previous</a>
+<a href="pdp-10.html">Up</a>
+<a href="Obsolete.html">Next</a>
+
+<h1>Recommended jump instructions:   PUSHJ, POPJ, JRST, JFCL, XCT.</h1>
+
+<pre>
+PUSHJ   C(AC)&lt;-C(AC)+&lt;1,,1&gt;;  C(CR(AC))&lt;-&lt;flags,,PC&gt;; PC&lt;-E;
+</pre>
+
+PUSHJ (PUSH return address and Jump) is like PUSH except the data
+that is pushed onto the top of the stack is the PC and flags word.
+The PC that is stored is the PC of the instruction that follows the
+PUSHJ.  Then the PC is set to the effective address of the
+instruction.  Pushdown overflow results if the AC becomes positive
+when it is incremented.
+
+<pre>
+POPJ    PC&lt;-CR(CR(AC)); C(AC)&lt;-C(AC)-&lt;1,,1&gt;
+</pre>
+
+POPJ (POP return address and Jump) undoes PUSHJ.  The right half of
+the word at the top of the stack is loaded into the PC (the flags are
+unchanged).  Then the stack pointer is decremented as in POP.  The
+effective address of POPJ is ignored.  Pushdown overflow obtains if
+the AC becomes negative as a result of the subtraction.<p>
+
+Programming hints:<p>
+
+If a subroutine called by PUSHJ AC, wants to skip over the
+instruction following the PUSHJ, the following sequence accomplishes
+that result:
+
+<pre>
+        AOS (AC)                ;AC better be non zero.
+        POPJ AC,
+</pre>
+
+If you must restore the flags that PUSHJ saved, the following
+sequence should be used instead of POPJ:
+
+<pre>
+        POP AC,(AC)             ;Adjust the stack
+        JRST 2,@1(AC)           ;Restore flags and PC from old stack top.
+</pre>
+
+However, this sequence has a timing error in that the word is released
+from the stack while its contents are still needed.  This can cause a
+bug if you have any interrupt processing in your program.
+
+JRST, Jump and ReSTore, is an unconditional jump instruction.  In
+JRST, the AC field does not address an accumulator.  Instead, the AC
+is decoded to signify various things.
+
+<pre>
+JRST            PC&lt;-E;
+JRST 2,         PC&lt;-E; flags are restored (see text);
+JRST 10,        PC&lt;-E; Dismiss current priority interrupt;
+JRST 12,        PC&lt;-E; restore flags and dismiss priority interrupt;
+</pre>
+
+If the AC field is zero, only a jump occurs.  JRST is everyone's
+favorite unconditional jump instruction (the only other one is JUMPA
+which is more typing, also, on the KA-10 JUMPA is slower than
+JRST).<p>
+
+JRST 2, (i.e., JRST with AC field set to 2) signifies jump and
+restore flags.  (The assembler also recognizes the mnemonic JRSTF for
+JRST 2,).  If indirection is used in JRSTF, then the flags are
+restored from the last word fetched in the address calculation.  If
+indexing is used with no indirection, the flags are restored from the
+left half of the specified index register.  If neither indexing nor
+indirection is used in the address calculation the flags are restored
+from the left half of the JRSTF itself!  In a user mode program JRSTF
+cannot clear USER nor can it set IOT User (it can however, clear IOT
+User).<p>
+
+The following are all illegal in user mode and are trapped as UUOs.<p>
+
+
+JRST 4, (alternate mnemonic HALT) sets the PC from E and stops the
+processor.<p>
+
+JRST 10, is used to dismiss the current priority interrupt.  Usually
+JRST 12, is used for this purpose since JRST 10, fails to retore
+flags.<p>
+
+JRST 12, (an alternate mnemonic is JEN, jump and enable priority
+interrupts) combines the functions of JRST 10, and JRST 2,.
+
+The JFCL (Jump on Flag and CLear) instruction is another case in
+which the AC field is decoded to modify the instruction.  The AC
+field selects the four flags in PC bits 0 through 3.  PC bits 0 to 3
+correspond to bits 9 to 12 in the JFCL instruction.  JFCL will jump
+if any flag selected by the AC field is a 1.  All flags selected by
+the AC field are set to zero.<p>
+
+JFCL 0, since it selects no PC bits, is a no-op.<p>
+
+JFCL 17, will clear all flags, and will jump if any of AROV, CRY0,
+CRY1, or FOV are set.<p>
+
+JFCL 1, (JFOV) jumps if FOV is set and clears FOV.<p>
+
+JFCL 10, (JOV) jumps if AROV is set and clears AROV.
+
+XCT, the execute instruction, fetches the word addressed by the
+effective address and executes that word as an instruction.  In the
+case of XCTing an instruction that stores a PC, the PC that is stored
+is the address of the instruction that follows the XCT.  If the
+executed instruction skips, then that skip is relative to the XCT.
+The AC field of the XCT should be zero.  [In exec mode a non zero AC
+field in an XCT is significant.]
+
+</body></html>

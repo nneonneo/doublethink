@@ -1,0 +1,344 @@
+
+
+
+
+
+
+
+
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+
+<HTML LANG="en">
+ <HEAD>
+  <TITLE>PDP-8 Interrupt Management</TITLE>
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+  <META name="viewport" content="width=device-width, initial-scale=1">
+  <META name="Author" content="Douglas W. Jones">
+  <META name="Language" content="English">
+  <META name="editor" content="/usr/bin/vi">
+  
+  
+  
+  <STYLE TYPE="text/css">
+   BODY { margin-left: 3%; margin-right: 3%; }
+   H2.SQUAT { margin-top: 0.4em; margin-bottom: 0.25em; }
+   H3.SQUAT { margin-top: 0.3em; margin-bottom: 0.2em; }
+   H4.SQUAT { margin-top: 0.2em; margin-bottom: 0.15em; }
+   H5.SQUAT { margin-top: 0.17em; margin-bottom: 0.15em; }
+   * { line-height: 1.1 }
+   P.SQUAT { margin-top: 0.25em; margin-bottom: 0.15em; }
+   UL.SQUAT { margin-top: 0.25em; margin-bottom: 0.15em; }
+   EM.O { font-style: normal; text-decoration: overline; }
+   EM.U { font-style: normal; text-decoration: underline; }
+   EM.S { font-style: normal; text-decoration: line-through; }
+   A { text-decoration: none; }
+   A.I { font-style: italic; text-decoration: none; }
+   SUP { vertical-align: 0; position: relative; bottom: 1ex; }
+   SUB { vertical-align: 0; position: relative; top: 0.8ex; }
+   TABLE.BOXY { border: 0; padding: 0; border-spacing: 0;
+                border-collapse: collapse; }
+   TD.BOX { border: solid; border-width: thin; border-color: DimGray;
+	      text-align: center; }
+   TD.BOXTT { border: solid; border-width: thin; border-color: DimGray;
+	      font-family: monospace; text-align: center; }
+   TD.TT { font-family: monospace; text-align: left; }
+   TD.TTSPACE { font-family: monospace; text-align: left; color: white }
+   TD.SHADE { background: Silver; text-align: center; }
+   CAPTION { padding-top: 6px; }
+   DIV.HEADBOX { border: groove; border-width: 2px; background: #F0F0E0; padding-top: 1%; padding-bottom: 1%; padding-left: 5px; }
+   DIV.HEADBOX P { margin-top: 0.8em; margin-bottom: 0.8em; }
+   DIV.HEADBOX H1 { margin-top: 0.2em; margin-bottom: 0.4em; }
+   DIV.HEADBOX H2 { margin-top: 0.2em; margin-bottom: 0.4em; }
+   DIV.INDENT { border: none; padding-left: 1em }
+   DIV.INVISIBLE { font-size: 3px; letter-spacing: -5px; color: white; background: white; }
+   DIV.INVISIBLE A:link { color: white; }
+   DIV.INVISIBLE A:visited { color: white; }
+   DIV.INVISIBLE A:active { color: white; }
+   DIV.invisible A:active { color: white; background: white; }
+  </STYLE>
+ </HEAD>
+ <BODY BGCOLOR="#FFFFFF" TEXT="#000000" link="#0000CC" vlink="#880088" alink="#880088">
+  <DIV CLASS=HEADBOX>
+   
+     <IMG SRC="http://www.cs.uiowa.edu/~jones/pdp8/logos/pdp8.gif"
+      HEIGHT="65"
+      WIDTH="65"
+      ALT="(none)"
+      HSPACE="5"
+      ALIGN=left
+     >
+     <IMG SRC="http://www.cs.uiowa.edu/~jones/transpix.gif"
+      ALT=" "
+      WIDTH="75%"
+      HEIGHT="1"
+     >
+    <DIV>
+   
+   <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0"><TR><TD>&nbsp;&nbsp;<TD>
+    
+     <H1>The Digital Equipment Corporation PDP-8</H1>
+    
+    
+     <H2>Interrupts</H2>
+    
+    <P>
+    
+     Part of <A HREF="index.html">
+      
+      the PDP-8 Programmer's Reference Manual
+      
+     </A>
+     <BR>
+     
+    
+    
+     by
+     <A HREF="http://www.cs.uiowa.edu/~jones/">Douglas W. Jones</A>
+     
+     <BR>
+    
+    
+    <A HREF="http://www.uiowa.edu/">
+     T<SMALL>HE</SMALL> U<SMALL>NIVERSITY</SMALL>
+    <SMALL>OF</SMALL> I<SMALL>OWA</SMALL></A>
+    <A HREF="http://www.cs.uiowa.edu/">Department&nbsp;of&nbsp;Computer&nbsp;Science</A>
+    
+    
+    
+   </TABLE>
+    
+     </DIV>
+    
+  </DIV>
+ 
+
+
+
+<H2>Index</H2>
+<UL>
+<LI><A HREF="intrupt.html#general">General</A>.
+<LI><A HREF="intrupt.html#instrs">Instructions</A>.
+<BR><A HREF="intrupt.html#skon">6000 - SKON Skip if Interrupt System On</A>.
+<BR><A HREF="intrupt.html#ion">6001 - ION Interrupts On</A>.
+<BR><A HREF="intrupt.html#iof">6002 - IOF Interrupts Off</A>.
+<BR><A HREF="intrupt.html#srq">6003 - SRQ Skip on Interrupt Request</A>.
+<BR><A HREF="intrupt.html#gtf">6004 - GTF Get Flags</A>.
+<BR><A HREF="intrupt.html#rtf">6005 - RTF Restore Flags</A>.
+<BR><A HREF="intrupt.html#sgt">6006 - SGT Skip if Greater Than</A>.
+<BR><A HREF="intrupt.html#caf">6007 - CAF Clear All Flags</A>.
+<LI><A HREF="intrupt.html#conventions">Programming Conventions</A>.
+</UL>
+
+<HR>
+
+<H2><A NAME=general>General</A></H2>
+
+Interrupts are not generally used by OS/8, the most widely used PDP-8
+operating system, but they are central to TSS-8 and other PDP-8 based
+timesharing systems.  In addition, many stand-alone PDP-8 applications
+made extensive use of interrupts.
+
+<P>
+A device may request an interrupt when it finishes an input/output
+transfer or reaches a similar ready condition.  Typically, each device has
+a device specific interrupt-enable flipflop that must be set to allow the
+device to post the request; in addition, the CPU contains a global
+interrupt-enable flipflop that must be set to allow the CPU to respond to
+an interrupt.
+
+<P>
+When the CPU accepts an interrupt request, the effect is as if a
+<code>JMS</code> instruction was executed to memory location 00000 (word
+zero fo field zero).  Thus, the 12 bit return address is stored in location
+zero, and execution begins at location one.
+
+<P>
+In addition to the transfer of control, the global interrupt enable flipflop
+is reset when an interrupt occurs.  If the extended memory option is present,
+the <A HREF="mmu.html#rib">interrupt buffer</A> is loaded with a record of
+the memory management state prior to the interrupt, and then both IF and DF
+are set to zero.
+
+<P>
+It is up to the interrupt service routine to save and restore all registers
+other than the PC, which was automatically saved in location zero.  In
+addition, it is up to the program to determine which device requested an
+interrupt and either service or disable that device's interrupt request.
+
+<P>
+Under OS/8 (prior to OS/78 and OS/278), the system did not run with interrupts
+enabled, but individual applicatons could enable interrupts.  By convention,
+it was expected that, on entry to or exit from an application, all devices
+would be either ready or would soon become ready (after completing an
+operation).  That is, it was expected that all devices would either have
+done flags set to indicate operation completion, or they would be busy with
+an operation still in progress.
+
+<P>
+Thus, under OS/8, the handler for any device typically begins by checking to
+see if the previous operation was done before initiating a new operation.
+If an application enables interrupts, all devices will typically immediately
+request interrupts, and the interrupt handlers must either give the devices
+work to do or somehow turn off their done flags because no work is available
+for that device.  Prior to exit, such an application would typically disable
+interrupts and then issue any device commands needed to get all devices to
+raise their done flags.
+
+<H2><A NAME=instrs>Instructions</A></H2>
+
+Formally, the general interrupt management instructions are IOT
+instructions involving device 0.  In addition, each device that may
+cause interrupts generally has its own interrupt management
+instructions; unfortunately, the latter are not standardized.
+
+<P>
+Only two interrupt management instructions are universally available
+on all PDP-8 models, <code>ION</code> and <code>IOF</code>.  All other
+interrupt management instructions are system specific, although the
+large majority are uniformly supported by all models after the PDP-8/E.
+
+<P>
+All instructions that deal with this option are privileged, and the
+detection and trapping of privileged instructions, if supported, is
+supported by the Time-Share option that is implemented as a
+subsystem of some PDP-8 memory management units.
+
+<H2>Instructions</H2>
+
+<H3><A NAME=skon>6000 - SKON Skip if Interrupt System On</A></H3>
+
+<code>SKON</code> is used to test the state of the interrupt enable
+flipflop.  If interrupts are enabled, the next instruction in sequence
+is skipped.
+
+<P>
+<code>SKON</code> is only available on the PDP-8/E and later models.
+On earlier models, this was a no-op.
+
+
+<H3><A NAME=ion>6001 - ION Interrupts On</A></H3>
+
+<code>ION</code> is used to turn on interrupts.  The effect of this
+instruction is delayed one instruction so that, for example, an ION
+instruction immediately before a return instruction will not take effect
+until the return instruction is executed.
+
+
+<H3><A NAME=iof>6002 - IOF Interrupts Off</A></H3>
+
+<code>IOF</code> is used to turn off or disable interrupts.  The effect
+of this instruction is immediate.  In addition, interrupts are disabled
+immediately when an interrupt occurs.
+
+<H3><A NAME=srq>6003 - SRQ Skip on Interrupt Request</A></H3>
+
+<code>SRQ</code> is used to test whether there is a pending interrupt
+request.  If a request is pending, the next instruction in sequence is
+skipped.  This test is only meaningful when interrupts are disabled; it
+may be used, for example, to avoid the expense of an unnecessary return
+from interrupt when some device other than the one just serviced is also
+requesting service.
+
+<P>
+<code>SRQ</code> is only available on the PDP-8/E and later models.
+On earlier models, this was probably interpreted as a nondeterministic
+microcoded combination of <code>ION</code> and <code>IOF</code>!
+
+<H3><A NAME=gtf>6004 - GTF Get Flags</A></H3>
+
+<code>GTF</code> is similar to <code><A HREF="mmu.html#rib">RIB</A></code>,
+but is only available on the PDP-8/E and later models.  This opcode was
+used for the Type 189 Analog to Digital Converter option on the original
+PDP-8, so it can cause very strange results if executed on the wrong machine!
+
+<P>
+<code>GTF</code> loads the accumulator with various information that may
+need to be saved and restored during interrupts.  This includes the link
+bit, the state of the optional memory management unit, and the greater-than
+flag from the optional extended arithmetic unit.  These are packed into
+the accumulator in the following format:
+
+<PRE WIDTH="60">
+            00 01 02 03 04 05 06 07 08 09 10 11
+            ___________________________________
+           |  |  |  |  |  |  |  |  |  |  |  |  |
+           |__|__|__|__|__|__|__|__|__|__|__|__|
+           |  |  |  |  |  |  |        |        |
+          LINK GT IR II IE  U    IF       DF    
+</PRE>
+
+<DL COMPACT>
+<DT> LINK
+<DD> -- the link bit.
+<DT> GT
+<DD> -- the Greater Than bit (see the
+	<code><A HREF="intrupt.html#sgt">SGT</A></code> instruction supported
+	by the <A HREF="http://homepage.divms.uiowa.edu/~jones/pdp8/man/eae.html">extended arithmetic element</A>.
+<DT> IR
+<DD> -- the interrupt request status, as tested by
+	<code><A HREF="intrupt.html#srq">SRQ</A></code>.  This is set to one if an interrupt
+	requesting is pending.
+<DT> II
+<DD> -- the interrupt inhibit bit associated with the Time-Share option
+	of the <A HREF="mmu.html">memory management unit</A>.
+<DT> IE
+<DD> -- the state of the interrupt enable flipflop, as set by the
+	<code><A HREF="intrupt.html#ion">ION</A></code> and reset by the
+	<code><A HREF="intrupt.html#iof">IOF</A></code> instructions.
+	This is set to one if interrupts are enabled.
+<DT> U
+<DD> -- the user-mode bit.
+<DT> IF
+<DD> -- the instruction field.
+<DT> DF
+<DD> -- the data field.
+<BR>  U, IF and DF are the same as the corresponding fields returned
+	by the <code><A HREF="mmu.html#rib">RIB</A></code> instruction.
+</DL>
+
+<H3><A NAME=rtf>6005 - RTF Restore Flags</A></H3>
+
+<code>RTF</code> restores the state of the flags that are saved by the
+<code><A HREF="intrupt.html#gtf">GTF</A></code> instruction, using the same data format.
+This instruction is only available on the PDP-8/E and later models; it
+can cause strange results when used on earlier machines (possibly acting
+as a microcoded combination of <code>GTF</code> and <code>ION</code>).
+
+<P>
+<code>RTF</code> ignores the IR (interrupt request) bit that was saved by
+<code>GTF</code>, and the IE (interrupt enable) bit is not fully restored
+until the instruction after the <code>RTF</code> instruction, so that
+a return from interrupt may be executed before the next interrupt request
+is serviced.
+
+<H3><A NAME=sgt>6006 - SGT Skip if Greater Than</A></H3>
+
+<code>SGT</code> is only supported if the
+<A HREF="http://homepage.divms.uiowa.edu/~jones/pdp8/man/eae.html">extended arithmetic element</A> is present, and then,
+only on the PDP-8/E and later machines.  This instruction skips if the
+greater than flag is set.
+
+<H3><A NAME=caf>6007 - CAF Clear All Flags</A></H3>
+
+<code>CAF</code> is only supported if the PDP-8/E and later machines.
+The effect of the CAF instruction is identical to a master clear issued
+from the front panel.  AC and LINK are cleared, interrupts are disabled
+globally, and all I/O devices are reset.  Generally, resetting a device
+sets the device specific interrupt enable bit and terminates any ongoing
+I/O activity.  Resetting a device may initiate long reset and self-test
+sequences, and it may leave the device in an odd state, for example when
+a reset is issued in the middle of a write operation.
+
+<H2><A NAME=conventions>Programming Conventions</A></H2>
+
+Note that, even on models where the <code>GTF</code> and <code>RTF</code>
+instructions are available, interrupt entry and exit can be quite complex,
+involving multiple instructions to save and restore the accumulator, link,
+multiplier quotient and step counter.  Furthermore, interrupt dispatching,
+determining which device requested an interrupt, can be difficult because
+the PDP-8 provides nothing analogous to vectored interrupts.
+
+</BODY>
+</HTML>

@@ -1,0 +1,121 @@
+<html><head>
+<!-- Based on MIT PDP-10 'Info' File by ??? -->
+<!-- This html version Copyright (c) 1995 by Henry G. Baker. -->
+<link rev="made" href="mailto:hbaker@netcom.com">
+<title>PDP-10 EvenOdd1./title></head><body>
+MIT PDP-10 'Info' file converted to Hypertext 'html' format by <a href="ftp://ftp.netcom.com/pub/hb/hbaker/home.html">Henry Baker</a><p>
+
+<a href="Even-Odd.html">Previous</a>
+<a href="pdp-10.html">Up</a>
+<a href="EvenOdd2.html">Next</a>
+
+<h1>Separate Even Characters, Odd Vowels, and Odd Consonants.</h1>
+
+The following program accepts a line of input (terminated by carriage
+return) from the terminal and outputs the even (i.e., every second)
+letters followed by those odd letters that are not vowels, followed by
+those odd letters that are vowels.<p>
+
+In the program of example 4, take the code
+
+<pre>
+L2:     MOVEI A,0               ;Store a terminating character (code zero)
+        IDPB A,B                ;at the end of the string in BUF.
+                                ;Now it is an ASCIZ string.
+        MOVEI A,BUF
+        PUSHJ P,OUTSTR          ;Call OUTSTR to output ASCIZ string
+                                ;starting at address in A.
+        MOVEI A,[ASCIZ /
+/]
+        PUSHJ P,OUTSTR          ;Output a CRLF.
+        JRST L
+</pre>
+
+and replace it with
+
+<pre>
+L2:     MOVEI A,0               ;Deposit code zero to terminate string
+        IDPB A,B                ;of odd letters (i.e., make it ASCIZ).
+        MOVE B,[440700,,BUF]    ;Take pointer for odd letters
+        MOVE C,B                ;Put pointer for vowels
+L3:     ILDB A,B                ;Get one odd letter.
+        JUMPE A,L4              ;Stop scanning when we reach the zero.
+        PUSHJ P,ISVOW           ;Is this a vowel?
+         JRST L3A               ;No.
+        IDPB A,C                ;Yes.  Store for later.
+        JRST L3
+
+L3A:    .IOT CHTTYO,A           ;Not a vowel, so output now.
+        JRST L3
+
+L4:     IDPB A,C                ;Store code zero to end string of vowels.
+        MOVEI A,BUF
+        PUSHJ P,OUTSTR          ;Output that string.
+        MOVEI A,[ASCIZ /
+/]
+        PUSHJ P,OUTSTR          ;Output a CRLF.
+        JRST L
+
+;Subroutine to skip if the character in A is a vowel.
+ISVOW:  CAIE A,"A               ;If character is upper case A
+         CAIN A,"a              ;or if it is lower case A,
+          JRST POPJ1            ;jump to a skip return.
+        CAIE A,"E               ;Same for E, etc.
+         CAIN A,"e
+          JRST POPJ1
+        CAIE A,"I
+         CAIN A,"i
+          JRST POPJ1
+        CAIE A,"O
+         CAIN A,"o
+          JRST POPJ1
+        CAIE A,"U
+         CAIN A,"u
+          JRST POPJ1
+        CAIE A,"Y
+         CAIN A,"y
+          JRST POPJ1
+        POPJ P,                 ;Not a vowel, so return with no skip.
+
+;Standard address of single skip return.
+POPJ1:  AOS (P)
+        POPJ P,
+</pre>
+
+<h2>NOTES:</h2>
+
+<ul>
+<li>Skip return: A subroutine is said to skip return when it skips
+the instruction which follows the call.  The subroutine call instruction
+therefore acts as a conditional skip instruction.  Subroutines called
+with a PUSHJ skip return by incrementing the return address where
+it lives on the stack.  Subroutines called in other ways implement
+skip returning in other ways.
+
+<li>POPJ1: This is the standard name for a place to jump to for a skip
+return.  Since the procedure for a skip return is independent of the
+address of the subroutine, every subroutine can use the same POPJ1.
+If you see the label POPJ1 used, you can assume it is a skip return of
+the sort shown above.
+
+<li>Consecutive skip instructions appear in ISVOW.  When this happens,
+each instruction that can be skipped is indented one more than the
+previous one.<p>
+
+If, on the other hand, you had a subroutine that could skip twice, and
+followed it by two non-skipping instructions, each of those
+instructions would be indented only once.
+
+<li>Re-using the string: as we scan the string of odd characters for
+vowels, we print out the consonants and store the vowels in a string
+again, reusing the same space.  The reason why it works to be reading
+out one string and writing another string in the same memory space is
+that we write at most one character for each character we read.  So we
+can never clobber a character that has not been read.  Even if every
+character is a vowel, the characters are stored into the bytes they
+have just been read out of, so nothing is lost.
+
+<li>Lower case letters make a difference in a character constant (such
+as "a).
+
+</ul></body></html>

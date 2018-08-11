@@ -1,0 +1,70 @@
+<html><head>
+<!-- Based on MIT PDP-10 'Info' File by ??? -->
+<!-- This html version Copyright (c) 1995 by Henry G. Baker. -->
+<link rev="made" href="mailto:hbaker@netcom.com">
+<title>PDP-10 Obsolete</title></head><body>
+MIT PDP-10 'Info' file converted to Hypertext 'html' format by <a href="ftp://ftp.netcom.com/pub/hb/hbaker/home.html">Henry Baker</a><p>
+
+<a href="Jumps.html">Previous</a>
+<a href="pdp-10.html">Up</a>
+<a href="Program.html">Next</a>
+
+<h1>Obsolete and not-recommended jump instructions:  JSR, JSP, JSA and JRA</h1>
+
+The JSR and JSP instructions are two non-stack subroutine calls which
+are typical of most non-stack machines.  JSP stores the old PC in an
+accumulator, and JSR stores it in a word at the beginning of the
+subroutine.  JSP is useful once in a while, such as, for a subroutine
+whose job is to push or pop several words on the stack.  JSR is useful
+only for UUO-handlers.  *Note JSR: UUO Handlers.  PUSHJ and POPJ
+should be used for all ordinary subroutines.<p>
+
+JSA and JRA are a peculiar subroutine call and matching return which
+were invented for PDP-6 Fortran.  In most programs they are not used
+at all.
+
+<pre>
+JSR     C(E)&lt;-&lt;flags,,PC&gt;; PC&lt;-E+1;
+</pre>
+
+JSR, Jump to SubRoutine, stores the PC in the word addressed by the
+effective address and jumps to the word following the word where the
+PC is stored.  This is the only PDP-10 instruction that stores the PC
+and flags without modifying any ACs; however, it is non-reentrant, so
+PUSHJ is favored in most cases.  The usual return from a subroutine
+called by a JSR is via JRST (or JRST 2,) indirect through the PC
+word.  (See JRST)
+
+<pre>
+JSP     C(AC)&lt;-&lt;flags,,PC&gt;; PC&lt;-E;
+</pre>
+
+JSP, Jump and Save PC, stores the PC and flags in the selected
+accumulator and jumps.
+
+<pre>
+JSA     C(E)&lt;-C(AC); C(AC)&lt;-&lt;E,,PC&gt;; PC&lt;-E+1;
+</pre>
+
+JSA, Jump and Save AC, stores the AC in word addressed by the
+effective address.  Then the left half of the AC is set to the
+effective address and the right half of AC is set to the return PC.
+Then the PC is set to one greater than the effective address.  The
+JRA instruction unwinds this call.  The advantage of this call is
+that a routine may have multiple entry points (which is difficult to
+do with JSR) and it's easy to find (and later to skip over) arguments
+that follow the calling instruction (which is possible to do with
+PUSHJ, but not quite so convenient).  Among the disadvantages of this
+call is that it is non reentrant, and it doesn't save flags.
+
+<pre>
+JRA     C(AC)&lt;-C(CL(AC)); PC&lt;-E;
+</pre>
+
+JRA, Jump and Restore AC, is the return from JSA.  If, e.g., a
+subrountine is called with JSA AC, then the return is made by:
+<pre>
+        JRA AC,(AC).
+</pre>
+</body></html>
+

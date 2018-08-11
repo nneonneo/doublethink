@@ -1,0 +1,224 @@
+
+
+
+
+
+
+
+
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+
+<HTML LANG="en">
+ <HEAD>
+  <TITLE>PDP-8 Registers and Memory</TITLE>
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+  <META name="viewport" content="width=device-width, initial-scale=1">
+  <META name="Author" content="Douglas W. Jones">
+  <META name="Language" content="English">
+  <META name="editor" content="/usr/bin/vi">
+  
+  
+  
+  <STYLE TYPE="text/css">
+   BODY { margin-left: 3%; margin-right: 3%; }
+   H2.SQUAT { margin-top: 0.4em; margin-bottom: 0.25em; }
+   H3.SQUAT { margin-top: 0.3em; margin-bottom: 0.2em; }
+   H4.SQUAT { margin-top: 0.2em; margin-bottom: 0.15em; }
+   H5.SQUAT { margin-top: 0.17em; margin-bottom: 0.15em; }
+   * { line-height: 1.1 }
+   P.SQUAT { margin-top: 0.25em; margin-bottom: 0.15em; }
+   UL.SQUAT { margin-top: 0.25em; margin-bottom: 0.15em; }
+   EM.O { font-style: normal; text-decoration: overline; }
+   EM.U { font-style: normal; text-decoration: underline; }
+   EM.S { font-style: normal; text-decoration: line-through; }
+   A { text-decoration: none; }
+   A.I { font-style: italic; text-decoration: none; }
+   SUP { vertical-align: 0; position: relative; bottom: 1ex; }
+   SUB { vertical-align: 0; position: relative; top: 0.8ex; }
+   TABLE.BOXY { border: 0; padding: 0; border-spacing: 0;
+                border-collapse: collapse; }
+   TD.BOX { border: solid; border-width: thin; border-color: DimGray;
+	      text-align: center; }
+   TD.BOXTT { border: solid; border-width: thin; border-color: DimGray;
+	      font-family: monospace; text-align: center; }
+   TD.TT { font-family: monospace; text-align: left; }
+   TD.TTSPACE { font-family: monospace; text-align: left; color: white }
+   TD.SHADE { background: Silver; text-align: center; }
+   CAPTION { padding-top: 6px; }
+   DIV.HEADBOX { border: groove; border-width: 2px; background: #F0F0E0; padding-top: 1%; padding-bottom: 1%; padding-left: 5px; }
+   DIV.HEADBOX P { margin-top: 0.8em; margin-bottom: 0.8em; }
+   DIV.HEADBOX H1 { margin-top: 0.2em; margin-bottom: 0.4em; }
+   DIV.HEADBOX H2 { margin-top: 0.2em; margin-bottom: 0.4em; }
+   DIV.INDENT { border: none; padding-left: 1em }
+   DIV.INVISIBLE { font-size: 3px; letter-spacing: -5px; color: white; background: white; }
+   DIV.INVISIBLE A:link { color: white; }
+   DIV.INVISIBLE A:visited { color: white; }
+   DIV.INVISIBLE A:active { color: white; }
+   DIV.invisible A:active { color: white; background: white; }
+  </STYLE>
+ </HEAD>
+ <BODY BGCOLOR="#FFFFFF" TEXT="#000000" link="#0000CC" vlink="#880088" alink="#880088">
+  <DIV CLASS=HEADBOX>
+   
+     <IMG SRC="http://www.cs.uiowa.edu/~jones/pdp8/logos/pdp8.gif"
+      HEIGHT="65"
+      WIDTH="65"
+      ALT="(none)"
+      HSPACE="5"
+      ALIGN=left
+     >
+     <IMG SRC="http://www.cs.uiowa.edu/~jones/transpix.gif"
+      ALT=" "
+      WIDTH="75%"
+      HEIGHT="1"
+     >
+    <DIV>
+   
+   <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0"><TR><TD>&nbsp;&nbsp;<TD>
+    
+     <H1>The Digital Equipment Corporation PDP-8</H1>
+    
+    
+     <H2>Registers and Memory Addressing</H2>
+    
+    <P>
+    
+     Part of <A HREF="index.html">
+      
+      the PDP-8 Programmer's Reference Manual
+      
+     </A>
+     <BR>
+     
+    
+    
+     by
+     <A HREF="http://www.cs.uiowa.edu/~jones/">Douglas W. Jones</A>
+     
+     <BR>
+    
+    
+    <A HREF="http://www.uiowa.edu/">
+     T<SMALL>HE</SMALL> U<SMALL>NIVERSITY</SMALL>
+    <SMALL>OF</SMALL> I<SMALL>OWA</SMALL></A>
+    <A HREF="http://www.cs.uiowa.edu/">Department&nbsp;of&nbsp;Computer&nbsp;Science</A>
+    
+    
+    
+   </TABLE>
+    
+     </DIV>
+    
+  </DIV>
+ 
+
+
+
+<H2>Index</H2>
+<DL>
+<DD><A HREF="registers.html#address">Memory Addressing</A>.
+<DD><A HREF="registers.html#ifpc">IF/PC - The Program Counter and Instruction Field</A>.
+<DD><A HREF="registers.html#dfindir">DF - The Data Field and Indirect Addressing</A>.
+<DD><A HREF="registers.html#linkac">LINK/AC - The Link bit and Accumulator</A>.
+<DD><A HREF="registers.html#mq">MQ - The Multiplier Quotient</A>.
+</DL>
+
+<HR>
+
+<H2><A NAME=address> Memory Addressing </A></H2>
+
+<PRE WIDTH="60">
+    0  1  2|00 01 02 03 04 05 06 07 08 09 10 11
+   ________|___________________________________
+  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+  |__|__|__|__|__|__|__|__|__|__|__|__|__|__|__|
+    3 bits |    5 bits    |       7 bits
+     field |     page     |    word in page
+</PRE>
+
+<P>
+The main memory may vary from 4K to 32K 12-bit words.  Memory
+addresses are 12 bits, with a 3 bit extension to specify the field
+that is present only on machines configured to operate with over 4K
+words.
+
+<P>
+The 12 bit address, specifying one word in the current field, is
+logically broken into two subfields, 5 bits to specify the page in
+field, and 7 bits to specify the word in page.
+
+<H2><A NAME=ifpc> IF/PC - The Program Counter and Instruction Field </A></H2>
+
+<PRE WIDTH="60">
+    0  1  2|00 01 02 03 04 05 06 07 08 09 10 11
+   ________|___________________________________
+  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+  |__|__|__|__|__|__|__|__|__|__|__|__|__|__|__|
+    3 bits |    5 bits    |       7 bits
+           | current page |    word in page
+      IF   |
+           |          program counter
+</PRE>
+
+<P>
+The program counter (including the optional instruction field)
+specifies the memory address from which the next instruction will
+be fetched.  After an instruction fetch, the program counter is
+incremented.  Carrys generated by incrementing or the PC do not
+propagate into the IF bits, if they are present.
+
+<H2><A NAME=dfindir> DF - The Data Field and Indirect Addressing </A></H2>
+
+<PRE WIDTH="60">
+    0  1  2|00 01 02 03 04 05 06 07 08 09 10 11
+   ________|___________________________________
+  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+  |__|__|__|__|__|__|__|__|__|__|__|__|__|__|__|
+    3 bits |             12 bits
+      DF   |          indirect word
+</PRE>
+
+The 3 bit data field register, if present, specifies the
+high bits of the address used for indirect operand fetches and
+stores.
+
+<H2><A NAME=linkac> LINK/AC - The Link bit and Accumulator </A></H2>
+
+<PRE WIDTH="60">
+           |00 01 02 03 04 05 06 07 08 09 10 11
+         __|___________________________________
+        |  |  |  |  |  |  |  |  |  |  |  |  |  |
+        |__|__|__|__|__|__|__|__|__|__|__|__|__|
+           | 
+      LINK |             12 bit AC
+           |
+</PRE>
+
+<P>
+Logically, the link bit and accumulator constitute a single 13 bit
+register because the link bit toggles whenever a carry is generated
+from the accumulator.  All arithmetic and logical operations operate
+on this register.
+
+<H2><A NAME=mq> MQ - The Multiplier Quotient </A></H2>
+
+<PRE WIDTH="60">
+            00 01 02 03 04 05 06 07 08 09 10 11
+            ___________________________________
+           |  |  |  |  |  |  |  |  |  |  |  |  |
+           |__|__|__|__|__|__|__|__|__|__|__|__|
+             
+                         12 bit MQ
+</PRE>
+
+<P>
+Prior to the PDP-8/E, this 12 bit register was always optional, being
+available only if the extended arithmetic element was present.  On the
+8/E and later models, this register is always present.  Software
+intended for portability across all PDP-8 models should not use this
+register.
+
+</BODY>
+</HTML>

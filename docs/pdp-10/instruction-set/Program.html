@@ -1,0 +1,68 @@
+<html><head>
+<!-- Based on MIT PDP-10 'Info' File by ??? -->
+<!-- This html version Copyright (c) 1995 by Henry G. Baker. -->
+<link rev="made" href="mailto:hbaker@netcom.com">
+<title>PDP-10 Program</title></head><body>
+MIT PDP-10 'Info' file converted to Hypertext 'html' format by <a href="ftp://ftp.netcom.com/pub/hb/hbaker/home.html">Henry Baker</a><p>
+
+<a href="Obsolete.html">Previous</a>
+<a href="pdp-10.html">Up</a>
+<a href="TTY-Output.html">Next</a>
+
+<h1>A Trivial Complete MIDAS Program.</h1>
+
+This program stores, in each word of TABLE, the index of that word.
+Thus, the 0th word gets 0, the next gets 1, etc.
+
+<pre>
+        TITLE   COUNT
+
+A=1                             ;Define a name for an accumulator.
+
+START:  MOVSI A,-100            ;initialize loop counter.
+                                ;A contains -100,,0
+LOOP:   HRRZM A,TABLE(A)        ;Use right half of A to index.
+        AOBJN A,LOOP            ;Add 1 to both halves (-77,,1 -76,,2 etc.)
+                                ;Jump if still negative.
+        .VALUE                  ;Halt program.
+
+TABLE:  BLOCK 100               ;Assemble space to fill up.
+
+END START                       ;End the assembly.
+</pre>
+
+</h2>NOTES:</h2>
+
+<ul>
+<li>TITLE: Every MIDAS program should begin with a TITLE statement
+which contains the program's name.
+
+<li>A: It is best to give names to the accumulators you use.
+Single character names are good except for an AC which is used
+generally for the same thing throughout the program.  Define a
+symbolic name for an AC with the assembler operator =.
+
+<li>Comments: Everything after a semicolon is a comment, until the end
+of the line.  Actually, this is only true if the semicolon is not
+inside of a text string of some sort.
+
+<li>START: This is a label, which marks a location in the program.  The
+label START is used to name the instruction at which the program
+should start running.  The name START itself is nothing special.
+MIDAS knows to use the value of START as the starting address because
+START is the operand of the END statement.
+
+<li>.VALUE: This is a system call instruction.  It halts the program,
+and makes DDT print out the program counter.  All system calls have
+names starting with a period.
+
+<li>BLOCK: The BLOCK n statement reserves n words of storage, which are
+not initialized.
+
+<li>END: The end statement tells MIDAS that the assembly input is
+finished, and its argument says what address to start the program at.
+In this case the argument is the value of the label START.
+
+</ul>
+
+</body></html>

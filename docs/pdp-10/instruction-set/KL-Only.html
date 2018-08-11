@@ -1,0 +1,59 @@
+<html><head>
+<!-- Based on MIT PDP-10 'Info' File by ??? -->
+<!-- This html version Copyright (c) 1995 by Henry G. Baker. -->
+<link rev="made" href="mailto:hbaker@netcom.com">
+<title>PDP-10 KL-Only</title></head><body>
+MIT PDP-10 'Info' file converted to Hypertext 'html' format by <a href="ftp://ftp.netcom.com/pub/hb/hbaker/home.html">Henry Baker</a><p>
+
+<a href="Fixed-Point.html">Previous</a>
+<a href="pdp-10.html">Up</a>
+<a href="Floating-Point.html">Next</a>
+
+This node describes some instructions that only KL-10's have.  This
+means that the only ITS machine which has them is MC.  You should
+probably not use them even if you expect to run on MC, so that your
+program can be moved.
+
+<h2>Double word Move instructions (KI10 and KL10)</h2>
+
+There are four double word move instructions.  These are suitable for
+manipulating KI10 and KL10 double precision floating point numbers,
+and for KL10 double precision integers.
+
+<pre>
+DMOVE   C(AC AC+1) &lt;- C(E E+1)
+DMOVEM  C(E E+1) &lt;- C(AC AC+1)
+DMOVN   C(AC AC+1) &lt;- -C(E E+1)
+DMOVNM  C(E E+1) &lt;- -C(AC AC+1)
+</pre>
+
+Note that the DMOVN and DMOVNM are NOT to be used for KA10 double
+precision floating point numbers!<p>
+
+If a program is written that may be have to be run on a KA10, the use
+of all double word instructions should be avoided.
+
+<h2>Double Precision Integer Arithmetic (KL10 only)</h2>
+
+There are four instructions for double precision integer arithmetic.
+None of these instructions have any modifier: they all operate on
+double (or quadruple) accumulators and double words in memory with
+results to double (or quadruple) accumulators.<p>
+
+The format for a double word integer is the same as that produced by
+MUL, i.e., a 70 bit integer in twos complement, with bit 0 of the
+most significant word is the sign; in operands, bit 0 of the low
+order word is ignored.  A quadruple word has 140 bits; bit 0 of the
+most significant word is the sign; in operands, bit 0 in all other
+words is ignored.  In double (and quadruple) arithmetic results bit 0
+of the low order word(s) is stored with the same value as bit 0 of
+the high order word.
+
+<pre>
+DADD    C(AC AC+1) &lt;- C(AC AC+1) + C(E E+1);
+DSUB    C(AC AC+1) &lt;- C(AC AC+1) - C(E E+1);
+DMUL    C(AC AC+1 AC+2 AC+3) &lt;- C(AC AC+1) * C(E E+1);
+DDIV    C(AC AC+1) &lt;- C(AC AC+1 AC+2 AC+3) / C(E E+1);
+                C(AC+2 AC+3) &lt;- remainder;
+</pre>
+</body></html>

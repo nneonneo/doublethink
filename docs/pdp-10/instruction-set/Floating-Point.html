@@ -1,0 +1,140 @@
+<html><head>
+<!-- Based on MIT PDP-10 'Info' File by ??? -->
+<!-- This html version Copyright (c) 1995 by Henry G. Baker. -->
+<link rev="made" href="mailto:hbaker@netcom.com">
+<title>PDP-10 Floating-Point</title></head><body>
+MIT PDP-10 'Info' file converted to Hypertext 'html' format by <a href="ftp://ftp.netcom.com/pub/hb/hbaker/home.html">Henry Baker</a><p>
+
+<a href="KL-Only.html">Previous</a>
+<a href="pdp-10.html">Up</a>
+<a href="Shifting.html">Next</a>
+
+<h1>Floating Point Arithmetic</h1>
+
+Single precision floating point numbers are represented in one 36 bit
+word as follows:
+
+<pre>
+ 0 00000000 011111111112222222222333333
+ 0 12345678 901234567890123456789012345
+ ______________________________________
+| |       |                            |
+|S| EXP   |     Fraction               |
+|_|_______|____________________________|
+</pre>
+
+If S is zero, the sign is positive. If S is one the sign is negative
+and the word is in twos complement format.  The fraction is
+interpreted as having a binary point between bits 8 and 9.  The
+exponent is an exponent of 2 represented in excess 200 (octal)
+notation.  In a normalized floating point number bit 9 is different
+from bit 0, except in a negative number bits 0 and 9 may both be one
+if bits 10:35 are all zero.  A floating point zero is represented by
+a word with 36 bits of zero.  Floating point numbers can represent
+numbers with magnitude within the range 0.5*2^|-128 to
+(1-2^|-27)*2^|127, and zero.<p>
+
+A number that in which bit 0 is one and bits 9-35 are zero can
+produce an incorrect result in any floating point operation.  Any
+word with a zero fraction and non-zero exponent can produce extreme
+loss of precision if used as an operand in a floating point addition
+or subtraction.<p>
+
+In KI10 (and KL10) double precision floating point, a second word is
+included which contains in bits 1:35 an additional 35 fraction bits.
+The additional fraction bits do not significantly affect the range of
+representable numbers, rather they extend the precision.<p>
+
+The KA10 lacks double precision floating point hardware, however
+there are several instructions by which software may implement double
+precision.  These instructions are DFN, UFA, FADL, FSBL, FMPL, and
+FDVL.  Users of the KL10 are strongly advised to avoid using these
+intructions.<p>
+
+In the PDP-6 floating pointing is somewhat different.  Consult a wizard.
+
+<pre>
+            |AD add                       |  result to AC
+F floating  |SB subtract  |R rounded      |I Immediate. result to AC
+            |MP multiply  |               |M result to memory
+            |DV divide    |               |B result to memory and AC
+                          |
+                          |
+                          |  no rounding  |  result to AC
+                                          |L Long mode
+                                          |M result to memory
+                                          |B result to memory and AC
+
+
+                   |AD add
+DF double floating |SB subtract
+                   |MP multiply
+                   |DV divide
+</pre>
+
+Note: In immediate mode, the memory operand is &lt;E,,0&gt;.  In long mode
+(except FDVL) the result appears in AC and AC+1.  In FDVL the AC
+operand is in AC and AC+1 and the quotient is stored in AC with the
+remainder in AC+1.
+
+<h2>Other floating point instructions:</h2>
+
+FSC (Floating SCale) will add E to the exponent of the number in AC
+and normalize the result.  One use of FSC is to convert an integer in
+AC to floating point (but FLTR, available in the KI and KL is better)
+To use FSC to float an integer, set E to 233 (excess 200 and shift
+the binary point 27 bits).  The integer being floated must not have
+more than 27 significant bits.  FSC will set AROV and FOV if the
+resulting exponent exceeds 127.  FXU (and AROV and FOV) will be set
+if the exponent becomes smaller than -128.<p>
+
+DFN (Double Floating Negate) is used only to negate KA10 software
+format double precision floating point numbers.  DFN treats AC and E
+as a KA10 double floating point number which it negates and stores
+back. AC is the high order word.  Usually the low order word is in
+AC+1, so the instruction most often appears as DFN AC,AC+1.<p>
+
+UFA (Unnormalized Floating Add) is used in KA10 to assist in software
+format double precision arithmetic.  UFA will add C(AC) to C(E) and
+place the result in AC+1.  The result of UFA will not be postnormalized
+unless in original operands the exponents and signs were the same and
+a fraction with magnitude greater than or equal to 1 was produced.  Only
+in this case will a one step normalization (right shift) occur.
+UFA will overflow in the same circumstances as FAD.  Underflow is not
+possible.<p>
+
+FIX will convert a floating point number to an integer.  If the
+exponent of the floating point number in C(E) is greater than
+(decimal) 35 (which is octal 243) then this instruction will set AROV
+and not affect C(AC).  Otherwise, convert C(E) to fixed point by the
+following procedure: Move C(E) to AC, copying bit 0 of C(E) to bits
+1:8 of AC (sign extend).  Then ASH AC by X-27 bits (where X is the
+exonent from bits 1:9 of C(E) less 200 octal).
+FIX will truncate towards zero, i.e., 1.9 is fixed to 1
+and -1.9 is fixed to -1.<p>
+
+FIXR (Fix and round) will convert a floating point number to an
+integer by rounding.  If the exponent of the floating point number in
+C(E) is greater than (decimal) 35 (which is octal 243) then this
+instruction will set AROV and not affect C(AC).  Otherwise, convert
+C(E) to fixed point by the following procedure: Move C(E) to AC,
+copying bit 0 of C(E) to bits 1:8 of AC (sign extend).  Then ASH AC
+by X-27 bits (where X is the exponent from bits 1:9 of C(E) less 200
+octal).  If X-27 is negative (i.e., right shift) then the rounding
+process will consider the bits shifted off the right end of AC.  If
+AC is positive and the discarded bits are &gt;=1/2 then 1 is added to AC.
+If AC is negative and the discarded bits are &gt;1/2 then 1 is added to
+AC.  Rounding is always in the positive direction: 1.4 becomes 1, 1.5
+becomes 2, -1.5 becomes -1, and -1.6 becomes -2.<p>
+
+FLTR (FLoaT and Round) will convert C(E), an integer, to floating
+point and place the result in AC.  The data from C(E) is copied to AC
+where its is arithmetic shifted right 8 places (keeping the bits that
+fall off the end) and the exponent 243 is inserted in bits 1:8.  The
+resulting number is normalized until bit 9 is significant
+(normalization may result in some or all of the bits that were right
+shifted being brought back into AC).  Finally, if any of the bits
+that were right shifted still remain outside the AC the result is
+rounded by looking at the bit to the right of the AC.
+
+</body></html>

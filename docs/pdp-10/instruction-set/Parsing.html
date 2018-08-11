@@ -1,0 +1,51 @@
+<html><head>
+<!-- Based on MIT PDP-10 'Info' File by ??? -->
+<!-- This html version Copyright (c) 1995 by Henry G. Baker. -->
+<link rev="made" href="mailto:hbaker@netcom.com">
+<title>PDP-10 Parsing</title></head><body>
+MIT PDP-10 'Info' file converted to Hypertext 'html' format by <a href="ftp://ftp.netcom.com/pub/hb/hbaker/home.html">Henry Baker</a><p>
+
+<a href="FileIO.html">Previous</a>
+<a href="pdp-10.html">Up</a>
+<a href="BufInput.html">Next</a>
+
+<h1>Parsing SIXBIT Words, and Filenames.</h1>
+
+Here is a sample routine which accumulates a word of sixbit, returning
+it in B.  Non-alphanumeric characters are terminators; the terminator
+encountered is returned in A.<p>
+
+We assume that GETCHR is a subroutine we can call
+which reads a character of input and returns it in A.
+
+<pre>
+GETSIX: MOVEI B,0
+        MOVE C,[440600,,B]      ;Byte pointer for storing into B.
+GETSX1: PUSHJ P,GETCHR          ;Read next character into A.
+        CAIN A,40
+         JRST [ JUMPE B,GETSX1  ;Flush leading blanks
+                POPJ P,]        ;but trailing blanks are terminators.
+        CAIL A,"A+40
+         CAILE A,"Z+40
+          JRST .+2              ;Not lower case
+           TRZ A,40             ;Make lower case into upper case
+        CAIL A,"A
+         CAILE A,"Z
+          JRST .+2
+           JRST GETSX2          ;Letters are ok in sixbit
+        CAIN A,^Q               ;^Q means "quote": use the next char
+         JRST [ PUSHJ P,GETCHR  ;even if it is usually a delimiter.
+                JRST GETSX2]
+        CAIL A,"0
+         CAILE A,"9
+          POPJ P,               ;Not a letter, not a digit.  This is delim.
+GETSX2: SUBI A,40               ;Convert to sixbit
+        TLNE C,770000           ;Skip if already got 6 characters.
+         IDPB A,C               ;Otherwise we would clobber C here.
+        JRST GETSX1
+</pre>
+
+You don't need to write a filename parsing routine, because you can
+use the library SYSENG;RFN &gt;.  However, RFN is a good example to read.
+
+</body></html>

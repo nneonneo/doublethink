@@ -1,0 +1,61 @@
+<html><head>
+<!-- Based on MIT PDP-10 'Info' File by ??? -->
+<!-- This html version Copyright (c) 1995 by Henry G. Baker. -->
+<link rev="made" href="mailto:hbaker@netcom.com">
+<title>PDP-10 Stack</title></head><body>
+MIT PDP-10 'Info' file converted to Hypertext 'html' format by <a href="ftp://ftp.netcom.com/pub/hb/hbaker/home.html">Henry Baker</a><p>
+
+<a href="Full-Word.html">Previous</a>
+<a href="pdp-10.html">Up</a>
+<a href="Half-Word.html">Next</a>
+
+<h1>Stack instructions</h1>
+
+The instructions PUSH and POP insert and remove full words in a pushdown
+list.  The address of the top of the list is kept in the right half
+of the AC referenced by these instructions.  The program may keep a
+control count in the left half of the AC.  There are also two
+subroutine calling instructions (PUSHJ and POPJ) that use this same
+format pushdown list.
+
+<pre>
+PUSH    C(AC)&lt;-C(AC)+&lt;1,,1&gt;;  C(CR(AC))&lt;-C(E)
+</pre>
+
+The specified accumulator is incremented by adding 1 to each half (in
+the KI10 and KL10 carry out of the right half is suppressed).  If, as
+result of the addition, the left half of the AC becomes positive, a
+pushdown overflow condition results (but the instruction procedes to
+completion).  The word addressed by the effective address is fetched
+and stored on the top of the stack which is addressed by the right
+half of the (incremented) accumulator.
+
+<pre>
+POP     C(E)&lt;-C(CR(AC)); C(AC)&lt;-C(AC)-&lt;1,,1&gt;
+</pre>
+
+POP undoes PUSH as follows: the word at the top of the stack
+(addressed by the right half of the selected AC) is fetched and
+stored at the effective address.  Then the AC is decremented by
+subtracting 1 from both halves (in the KI10 and KL10 carry out of bit
+18 is suppressed).  If the AC becomes negative as a result of the
+subtraction a pushdown overflow results.<p>
+
+Often the accumulator used as the pushdown pointer is given the
+symbolic name P.  To initialize a pushdown pointer (e.g., for N words
+starting at PDLIST), one might do the following:
+
+<pre>
+        MOVE P,[-N,,PDL-1]
+</pre>
+
+Elsewhere in the program should appear:
+
+<pre>
+PDL:    BLOCK   N
+</pre>
+
+which defines the symbolic label PDL and reserves N words
+following it.
+
+</body></html>

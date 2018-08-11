@@ -1,0 +1,74 @@
+<html><head>
+<!-- Based on MIT PDP-10 'Info' File by ??? -->
+<!-- This html version Copyright (c) 1995 by Henry G. Baker. -->
+<link rev="made" href="mailto:hbaker@netcom.com">
+<title>PDP-10 IFormat</title></head><body>
+MIT PDP-10 'Info' file converted to Hypertext 'html' format by <a href="ftp://ftp.netcom.com/pub/hb/hbaker/home.html">Henry Baker</a><p>
+
+<a href="Memory.html">Previous</a>
+<a href="pdp-10.html">Up</a>
+<a href="Terms.html">Next</a>
+
+<h1>Instruction Formats</h1>
+
+The PDP-10 is a word oriented machine.  Words contain 36 data bits,
+numbered (left to right) 0 to 35.  Every machine instruction is one
+word.  The program counter or PC is a register which contains the
+address of the next word to be used as an instruction; after a normal
+instruction, the PC is incremented by one so that successive
+instructions come from successive words.<p>
+
+There are two formats for machine instructions.  Most
+instructions have the format:
+
+<pre>
+ 000000000 0111 1 1111 112222222222333333
+ 012345678 9012 3 4567 890123456789012345
+ ________________________________________
+|         |    | |    |                  |
+|   OP    | AC |I| X  |        Y         |
+|_________|____|_|____|__________________|
+</pre>
+
+
+Input-output instructions (which are illegal in user mode) have the
+format:  (These instructions are not discussed any farther by this
+file).
+
+<pre>
+ 000 0000000 111 1 1111 112222222222333333
+ 012 3456789 012 3 4567 890123456789012345
+ _________________________________________
+|   |       |   | |    |                  |
+|111|  DEV  |IOP|I| X  |        Y         |
+|___|_______|___|_|____|__________________|
+</pre>
+In the diagrams above the field names are
+<pre>
+        OP  = operation code
+        AC  = accumulator field
+        I   = indirect bit
+        X   = index field
+        Y   = address field
+        DEV = device code
+        IOP = input-output operation code
+</pre>
+
+Some example intructions are:
+
+<pre>
+        MOVE 1,@100             ;MOVE is the OP.  AC is 1.
+                                ;@ sets the I bit.
+                                ;X is zero, Y is 100.
+
+        HRRZ 17,1(3)            ;HRRZ is the OP. AC is 17,
+                                ;Y = 1, X = 3, I = 0
+
+        SOS FOO                 ;SOS is OP, FOO is symbolic
+                                ;for the Y field.  AC, X, I are 0.
+</pre>
+
+The address field, the index field, and the indirect bit are all used
+in effective address computation.  See also <a href="Addr-Comp.html">Addr-Comp</a>.
+
+</body></html>

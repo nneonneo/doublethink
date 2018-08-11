@@ -1,0 +1,390 @@
+
+
+
+
+
+
+
+
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+
+<HTML LANG="en">
+ <HEAD>
+  <TITLE>PDP-8 Memory Management Instructions</TITLE>
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+  <META name="viewport" content="width=device-width, initial-scale=1">
+  <META name="Author" content="Douglas W. Jones">
+  <META name="Language" content="English">
+  <META name="editor" content="/usr/bin/vi">
+  
+  
+  
+  <STYLE TYPE="text/css">
+   BODY { margin-left: 3%; margin-right: 3%; }
+   H2.SQUAT { margin-top: 0.4em; margin-bottom: 0.25em; }
+   H3.SQUAT { margin-top: 0.3em; margin-bottom: 0.2em; }
+   H4.SQUAT { margin-top: 0.2em; margin-bottom: 0.15em; }
+   H5.SQUAT { margin-top: 0.17em; margin-bottom: 0.15em; }
+   * { line-height: 1.1 }
+   P.SQUAT { margin-top: 0.25em; margin-bottom: 0.15em; }
+   UL.SQUAT { margin-top: 0.25em; margin-bottom: 0.15em; }
+   EM.O { font-style: normal; text-decoration: overline; }
+   EM.U { font-style: normal; text-decoration: underline; }
+   EM.S { font-style: normal; text-decoration: line-through; }
+   A { text-decoration: none; }
+   A.I { font-style: italic; text-decoration: none; }
+   SUP { vertical-align: 0; position: relative; bottom: 1ex; }
+   SUB { vertical-align: 0; position: relative; top: 0.8ex; }
+   TABLE.BOXY { border: 0; padding: 0; border-spacing: 0;
+                border-collapse: collapse; }
+   TD.BOX { border: solid; border-width: thin; border-color: DimGray;
+	      text-align: center; }
+   TD.BOXTT { border: solid; border-width: thin; border-color: DimGray;
+	      font-family: monospace; text-align: center; }
+   TD.TT { font-family: monospace; text-align: left; }
+   TD.TTSPACE { font-family: monospace; text-align: left; color: white }
+   TD.SHADE { background: Silver; text-align: center; }
+   CAPTION { padding-top: 6px; }
+   DIV.HEADBOX { border: groove; border-width: 2px; background: #F0F0E0; padding-top: 1%; padding-bottom: 1%; padding-left: 5px; }
+   DIV.HEADBOX P { margin-top: 0.8em; margin-bottom: 0.8em; }
+   DIV.HEADBOX H1 { margin-top: 0.2em; margin-bottom: 0.4em; }
+   DIV.HEADBOX H2 { margin-top: 0.2em; margin-bottom: 0.4em; }
+   DIV.INDENT { border: none; padding-left: 1em }
+   DIV.INVISIBLE { font-size: 3px; letter-spacing: -5px; color: white; background: white; }
+   DIV.INVISIBLE A:link { color: white; }
+   DIV.INVISIBLE A:visited { color: white; }
+   DIV.INVISIBLE A:active { color: white; }
+   DIV.invisible A:active { color: white; background: white; }
+  </STYLE>
+ </HEAD>
+ <BODY BGCOLOR="#FFFFFF" TEXT="#000000" link="#0000CC" vlink="#880088" alink="#880088">
+  <DIV CLASS=HEADBOX>
+   
+     <IMG SRC="http://www.cs.uiowa.edu/~jones/pdp8/logos/pdp8.gif"
+      HEIGHT="65"
+      WIDTH="65"
+      ALT="(none)"
+      HSPACE="5"
+      ALIGN=left
+     >
+     <IMG SRC="http://www.cs.uiowa.edu/~jones/transpix.gif"
+      ALT=" "
+      WIDTH="75%"
+      HEIGHT="1"
+     >
+    <DIV>
+   
+   <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0"><TR><TD>&nbsp;&nbsp;<TD>
+    
+     <H1>The Digital Equipment Corporation PDP-8</H1>
+    
+    
+     <H2>Memory Management Instructions</H2>
+    
+    <P>
+    
+     Part of <A HREF="index.html">
+      
+      the PDP-8 Programmer's Reference Manual
+      
+     </A>
+     <BR>
+     
+    
+    
+     by
+     <A HREF="http://www.cs.uiowa.edu/~jones/">Douglas W. Jones</A>
+     
+     <BR>
+    
+    
+    <A HREF="http://www.uiowa.edu/">
+     T<SMALL>HE</SMALL> U<SMALL>NIVERSITY</SMALL>
+    <SMALL>OF</SMALL> I<SMALL>OWA</SMALL></A>
+    <A HREF="http://www.cs.uiowa.edu/">Department&nbsp;of&nbsp;Computer&nbsp;Science</A>
+    
+    
+    
+   </TABLE>
+    
+     </DIV>
+    
+  </DIV>
+ 
+
+
+
+<H2>Index</H2>
+<UL>
+<LI><A HREF="mmu.html#general">General</A>.
+<LI><A HREF="mmu.html#format">Instruction Format</A>.
+<BR><A HREF="mmu.html#cdf">62n1 - CDF Change Data Field</A>.
+<BR><A HREF="mmu.html#cif">62n2 - CIF Change Instruction Field</A>.
+<BR><A HREF="mmu.html#rdf">6214 - RDF Read Data Field</A>.
+<BR><A HREF="mmu.html#rif">6224 - RIF Read Instruction Field</A>.
+<BR><A HREF="mmu.html#rib">6234 - RIB Read Interrupt Buffer</A>.
+<BR><A HREF="mmu.html#rmf">6244 - RMF Restore Memory Field</A>.
+<LI><A HREF="mmu.html#assembly">Assembly Language Support</A>.
+<LI><A HREF="mmu.html#conventions">Programming Conventions</A>.
+<BR><A HREF="mmu.html#longpoint">Long Pointers</A>.
+<BR><A HREF="mmu.html#farcall">Far Calls</A>.
+</UL>
+
+<HR>
+
+<H2><A NAME=general>General</A></H2>
+
+The PDP-8 memory management unit is always optional, and goes under
+different names with different PDP-8 models.  On the original PDP-8,
+the Type 183 Memory Extension Control performs this function, while
+on the PDP-8/E, the KM8-E Memory Extension and Time-Share Option
+performs this function.
+
+<P>
+All instructions that deal with this option are privileged, and the
+detection and trapping of privileged instructions, if supported, is
+supported by the Time-Share option that is implemented as a subsystem
+of some PDP-8 memory management units; this is discussed separately
+because this option is generally disabled except in systems intended
+for supporting timesharing applications.
+
+<H2><A NAME=format>Instruction Format</A></H2>
+
+<PRE WIDTH="60">
+            00 01 02 03 04 05 06 07 08 09 10 11
+            ___________________________________
+           | 1| 1| 0| 0| 1| 0|  |  |  |  |  |  |
+           |__|__|__|__|__|__|__|__|__|__|__|__|
+           |                 |        |        |
+           |     Opcode      |  Field |   Op   |
+</PRE>
+
+Formally, all memory management instructions are IOT instructions
+involving devices 20 through 27.  The least significant 3 bits of
+the device address (bits 6 - 8) are used to specify the memory
+field, for those instructions where this must be specified, while the
+least significant 3 bits of the instruction specify what operation to
+perform.
+
+<P>
+On the PDP-8/A, the KT8AA option supports addressing of up to 128K
+words of memory.  This is fully compatable for the low 32K only.
+
+<H2>Instructions</H2>
+
+<H3><A NAME=cdf>62n1 - CDF Change Data Field</A></H3>.
+
+<PRE WIDTH="60">
+	CDF 0070
+</PRE>
+<P>
+Bits 6 through 8 of the instruction word are stored in the data field
+register.  There is no effect on the accumulator or link bit.
+Self-modifying code must be used to change to a variable field.
+
+<P>
+It is legal to microcode <code>CDF</code> with
+<code><A HREF="mmu.html#cif">CIF</A></code> to make a single instruction
+that sets both DF and IF.  Some assemblers provide the mnemonic
+<code>CDI</code> for this.
+
+<H3><A NAME=cif>62n2 - CIF Change Instruction Field</A></H3>
+
+<PRE WIDTH="60">
+	CIF 0070
+</PRE>
+<P>
+Bits 6 through 8 of the instruction word are stored in the Instruction Buffer
+(IB) register.  There is no effect on the accumulator or link bit.
+Self-modifying code must be used to change to a variable field.
+
+<P>
+The instruction buffer register is a 3 bit register instide the memory
+management unit.  The contents of this register are transferred to IF,
+instruction field register, whenever a
+<code><A HREF="mri.html#jmp">JMP</A></code> or
+<code><A HREF="mri.html#jms">JMS</A></code>
+instruction is executed.
+
+<P>
+The <code>CIF</code> instruction disables interrupts until the next
+branch instruction is executed.  This involves a special interrupt control
+flipflop distinct from the ones controlled by the
+<code><A HREF="intrupt.html#ion">ION</A></code> and
+<code><A HREF="intrupt.html#iof">IOF</A></code> instructions.
+
+<H3><A NAME=rdf>6214 - RDF Read Data Field</A></H3>
+
+<code>RDF</code> ors the DF register with bits 6 to 8 of the accumulator.
+The other bits of the accumulator are unaffected.  This instruction is
+commonly used to construct a
+<code><A HREF="mmu.html#cdf">CDF</A></code> or
+<code><A HREF="mmu.html#cif">CIF</A></code>
+instruction as follows:
+
+<PRE WIDTH="60">
+	CLA
+	TAD	(CDF)	/ load field setting instruction
+	RDF		/ make it ref current data field
+	DCA	CDFLOC	/ self-modify the program
+</PRE>
+
+<H3><A NAME=rif>6224 - RIF Read Instruction Field</A></H3>
+
+<code>RIF</code> ors the IF register with bits 6 to 8 of the accumulator.
+The other bits of the accumulator are unaffected.  This instruction is
+commonly used to construct a
+<code><A HREF="mmu.html#cdf">CDF</A></code> or
+<code><A HREF="mmu.html#cif">CIF</A></code>
+instruction as illustrated with
+the <code><A HREF="mmu.html#rdf">RDF</A></code> instruction.
+
+<H3><A NAME=rib>6234 - RIB Read Interrupt Buffer</A></H3>
+
+<code>RIB</code> ors the Interrupt Buffer register with the least
+significant bits of the accumulator.  The Interrupt Buffer register
+is used to save the the state of the memory management unit when an
+interrupt occurs.  This register is either 6 or 7 bits, depending
+on whether the machine is equipped with the time-share option:
+
+<PRE WIDTH="60">
+            00 01 02 03 04 05 06 07 08 09 10 11
+            ___________________________________
+           |  |  |  |  |  |  |  |  |  |  |  |  |
+           |__|__|__|__|__|__|__|__|__|__|__|__|
+                          |  |        |        |
+                          | U|   IF   |   DF   |
+</PRE>
+
+<H3><A NAME=rmf>6244 - RMF Restore Memory Field</A></H3>
+
+<code>RMF</code> restores the memory management unit to its state
+at the time of the last interrupt.  This involves the transfer of
+the contents of the Interrupt Buffer to the IB and DF registers.
+(note that the IB register is copied into the IF register when a
+JMP or JMS instruction is executed.)
+If the time-share option is present and enabled, this also involves
+restoring the state of the user-mode bit.
+
+<P>
+The <code>RMF</code> instruction does not restore the IF register
+directly, but rather, it restores the IB register, so that the change
+of instruction field is deferred until the next branch instruction.
+Thus, interrupts must be disabled between the <code>RMF</code> and
+the following branch, usually the return from interrupt.  This is
+exactly the same restriction as applied to the use of the
+<code><A HREF="mmu.html#cif">CIF</A></code> instruction.
+
+<P>
+The <code>RMF</code> instruction should not be used in the context of
+systems where one interrupt service routine may interrupt another.
+In that context, an <code>RIB</code> instruction must precede the
+interrupt enable within the low-priority interrupt service routine,
+and, at the end of the low-priority routine, a sequence of
+<code><A HREF="mmu.html#cdf">CDF</A></code> and
+<code><A HREF="mmu.html#cif">CIF</A></code>
+instructions must be used to restore the state.
+
+<H2><A NAME=assembly>Assembly Language Support</A></H2>
+
+<PRE WIDTH="60">
+	FIELD
+	FIELD	3
+</PRE>
+<P>
+The <code>FIELD</code> directive in the PAL family of absolute PDP-8
+assemblers is used to set the memory field to which code is to be
+assembled.  If this directive is not used, assembly defaults to field
+zero.  If used without an operand, it forces the location counter to
+advance to the next field.  If used with an operand between 0 and 7,
+it forces assembly to begin at the start of that field or at location
+0200 of that field (depending on the version of the assembler).
+
+<H2><A NAME=conventions>Programming Conventions</A></H2>
+
+The following programming conventions for use with the PDP-8 extended
+memory options are just that, conventions and not mandatory practices.
+
+<H3><A NAME=longpoint>Long Pointers</A></H3>
+
+If it is necessary to create a pointer to data in a distant field, a
+double-word is typically set aside, where one word holds the actual
+pointer and the other word holds a copy of the
+<code><A HREF="mmu.html#cdf">CDF</A></code>
+instruction needed to set the high 3 bits of the address of the data.
+
+<P>
+Given a variable <code>X</code> at address 54321 (word 4321 of field 5),
+the following code directly references <code>X</code>:
+
+<PRE WIDTH="60">
+	CDF 50
+	TAD I	(4321)
+</PRE>
+
+A pointer to location <code>X</code> might be constructed as follows
+
+<PRE WIDTH="60">
+XPT,	CDF 50
+	4321
+</PRE>
+
+The following code uses this pointer:
+
+<PRE WIDTH="60">
+	CLA
+	TAD	XPT	/ get the CDF instruction
+	DCA	.+1	/ self modify
+	CDF .-.		/  -- modified location --
+	TAD I	XPT+1	/ fetch word from remote field
+</PRE>
+	
+<H3><A NAME=farcall>Far Calls</A></H3>
+
+To call a procedure in a memory field other than that containing
+the calling code, the identity of the calling field must be passed
+to the procedure so it can return properly.  Usually, IF and DF are
+the same, so by convention, the identity of the calling field is
+passed in the DF register and the procedure restores the IF and DF
+registers on return.
+
+<P>
+In the following example, it is assumed that the assembly-time
+symbol <code>CURFLD</code> contains the identity of the current
+memory field (between 0 and 7).  Note that the <code>^</code>
+operator is the standard symbol for multiplication in the PAL
+family of assemblers.
+
+<PRE WIDTH="60">
+PROCF=	CURFLD^8	/ argument to CDF to call PROC
+PROC,	.-.		/ entry point
+	CLA
+	RDF		/ find out where call was from
+	TAD	(CIF CDF)	/ make CDI for return
+	DCA	PROCR	/ self modify
+
+	...
+
+PROCR,	CIF CDF .-.	/ -- modified location --
+	JMP I	PROC	/ return
+</PRE>
+
+A call to the above procedure would take the following form:
+
+<PRE WIDTH="60">
+	CIF PROCF	/ setup for call
+	JMS I	[PROC]	/ call
+</PRE>
+
+<P>
+Note that, on entry to this procedure, the current data field refers to
+the caller's instruction field; this makes parameter passing easy because
+it forces all indirect references to the caller's address space.  If the
+procedure makes any indirect references to other material in its own
+address space, or if it makes any far-calls to other procedures, they
+must be preceded by <code>CDF&nbsp;PROCF</code>.
+
+</BODY>
+</HTML>

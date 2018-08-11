@@ -1,0 +1,440 @@
+
+
+
+
+
+
+
+
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+
+<HTML LANG="en">
+ <HEAD>
+  <TITLE>PDP-8 Paper Tape Instructions</TITLE>
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+  <META name="viewport" content="width=device-width, initial-scale=1">
+  <META name="Author" content="Douglas W. Jones">
+  <META name="Language" content="English">
+  <META name="editor" content="/usr/bin/vi">
+  
+  
+  
+  <STYLE TYPE="text/css">
+   BODY { margin-left: 3%; margin-right: 3%; }
+   H2.SQUAT { margin-top: 0.4em; margin-bottom: 0.25em; }
+   H3.SQUAT { margin-top: 0.3em; margin-bottom: 0.2em; }
+   H4.SQUAT { margin-top: 0.2em; margin-bottom: 0.15em; }
+   H5.SQUAT { margin-top: 0.17em; margin-bottom: 0.15em; }
+   * { line-height: 1.1 }
+   P.SQUAT { margin-top: 0.25em; margin-bottom: 0.15em; }
+   UL.SQUAT { margin-top: 0.25em; margin-bottom: 0.15em; }
+   EM.O { font-style: normal; text-decoration: overline; }
+   EM.U { font-style: normal; text-decoration: underline; }
+   EM.S { font-style: normal; text-decoration: line-through; }
+   A { text-decoration: none; }
+   A.I { font-style: italic; text-decoration: none; }
+   SUP { vertical-align: 0; position: relative; bottom: 1ex; }
+   SUB { vertical-align: 0; position: relative; top: 0.8ex; }
+   TABLE.BOXY { border: 0; padding: 0; border-spacing: 0;
+                border-collapse: collapse; }
+   TD.BOX { border: solid; border-width: thin; border-color: DimGray;
+	      text-align: center; }
+   TD.BOXTT { border: solid; border-width: thin; border-color: DimGray;
+	      font-family: monospace; text-align: center; }
+   TD.TT { font-family: monospace; text-align: left; }
+   TD.TTSPACE { font-family: monospace; text-align: left; color: white }
+   TD.SHADE { background: Silver; text-align: center; }
+   CAPTION { padding-top: 6px; }
+   DIV.HEADBOX { border: groove; border-width: 2px; background: #F0F0E0; padding-top: 1%; padding-bottom: 1%; padding-left: 5px; }
+   DIV.HEADBOX P { margin-top: 0.8em; margin-bottom: 0.8em; }
+   DIV.HEADBOX H1 { margin-top: 0.2em; margin-bottom: 0.4em; }
+   DIV.HEADBOX H2 { margin-top: 0.2em; margin-bottom: 0.4em; }
+   DIV.INDENT { border: none; padding-left: 1em }
+   DIV.INVISIBLE { font-size: 3px; letter-spacing: -5px; color: white; background: white; }
+   DIV.INVISIBLE A:link { color: white; }
+   DIV.INVISIBLE A:visited { color: white; }
+   DIV.INVISIBLE A:active { color: white; }
+   DIV.invisible A:active { color: white; background: white; }
+  </STYLE>
+ </HEAD>
+ <BODY BGCOLOR="#FFFFFF" TEXT="#000000" link="#0000CC" vlink="#880088" alink="#880088">
+  <DIV CLASS=HEADBOX>
+   
+     <IMG SRC="http://www.cs.uiowa.edu/~jones/pdp8/logos/pdp8.gif"
+      HEIGHT="65"
+      WIDTH="65"
+      ALT="(none)"
+      HSPACE="5"
+      ALIGN=left
+     >
+     <IMG SRC="http://www.cs.uiowa.edu/~jones/transpix.gif"
+      ALT=" "
+      WIDTH="75%"
+      HEIGHT="1"
+     >
+    <DIV>
+   
+   <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0"><TR><TD>&nbsp;&nbsp;<TD>
+    
+     <H1>The Digital Equipment Corporation PDP-8</H1>
+    
+    
+     <H2>Paper Tape Instructions</H2>
+    
+    <P>
+    
+     Part of <A HREF="index.html">
+      
+      the PDP-8 Programmer's Reference Manual
+      
+     </A>
+     <BR>
+     
+    
+    
+     by
+     <A HREF="http://www.cs.uiowa.edu/~jones/">Douglas W. Jones</A>
+     
+     <BR>
+    
+    
+    <A HREF="http://www.uiowa.edu/">
+     T<SMALL>HE</SMALL> U<SMALL>NIVERSITY</SMALL>
+    <SMALL>OF</SMALL> I<SMALL>OWA</SMALL></A>
+    <A HREF="http://www.cs.uiowa.edu/">Department&nbsp;of&nbsp;Computer&nbsp;Science</A>
+    
+    
+    
+   </TABLE>
+    
+     </DIV>
+    
+  </DIV>
+ 
+
+
+
+<P>
+This document describes the high speed paper-tape reader-punch interface
+of the PDP-8, including the PC8E (M840) interface for the Omnibus machines
+(the PDP-8/E,F,M and A) as well as earlier models.  The IOmec (Digitronics)
+9602-1 interface is an extension of this.
+
+<H2>Index</H2>
+<UL>
+<LI><A HREF="papertape.html#registers">Device Registers</A>.
+<LI><A HREF="papertape.html#format">Instruction Format</A>.
+<LI>Input Instructions (device x).
+<BR><A HREF="papertape.html#rpe">6010 - RPE Reader Punch Enable</A>.
+<BR><A HREF="papertape.html#rsf">6011 - RSF Reader Skip if Flag</A>.
+<BR><A HREF="papertape.html#rrb">6012 - RRB Read Reader Buffer</A>.
+<BR><A HREF="papertape.html#rrbrsf">6013 - RRB RSF (IOmec only)</A>.
+<BR><A HREF="papertape.html#rfc">6014 - RFC Reader Flag Clear</A>.
+<BR><A HREF="papertape.html#rfcrsf">6015 - RFC RSF (IOmec only)</A>.
+<BR><A HREF="papertape.html#rrbrfc">6016 - RRB RFC read buffer and continue</A>.
+<BR><A HREF="papertape.html#rfcrrbrsf">6017 - RFC RRB RSF (IOmec only)</A>.
+<LI>Output Instructions (device y).
+<BR><A HREF="papertape.html#pce">6020 - PCE Punch Clear Enable</A>.
+<BR><A HREF="papertape.html#psf">6021 - PSF Punch Skip if Flag</A>.
+<BR><A HREF="papertape.html#pcf">6022 - PCF Punch Clear Flag</A>.
+<BR><A HREF="papertape.html#ppc">6024 - PPC Punch Put Character</A>.
+<BR><A HREF="papertape.html#pls">6026 - PLS Punch Load Sequence</A>.
+<LI><A HREF="papertape.html#conventions">programming conventions</A>.
+</UL>
+
+<HR>
+
+<H2><A NAME=registers>Device Registers</A></H2>
+
+The high speed paper-tape reader-punch interface consists of two largely
+independent devices, the reader device and the punch device.  In some cases,
+the reader and punch are independent hardware devices.  In other cases, the
+reader and punch are combined into a single unit.  The computer interacts
+with these devices through 16 IOT instructions; these instructions,
+in turn, reference the registers described below.
+<P>
+Note:  Most of these registers are accessed via the accumulator; such registers
+are illustrated as their contents appears when loaded in the accumulator.
+
+<H3>Reader Buffer</H3>
+
+<PRE WIDTH="60">
+            00 01 02 03 04 05 06 07 08 09 10 11
+            ___________________________________
+           | 0| 0| 0| 0|  |  |  |  |  |  |  |  |
+           |__|__|__|__|__|__|__|__|__|__|__|__|
+           |           |                       |
+           |  Unused   |    Keyboard Buffer    |
+</PRE>
+The reader buffer register holds the character most recently read from the
+paper tape.  While a character is being read, the contents
+of this register are unpredictable.
+
+<H3>Reader Flag</H3>
+
+The reader flag bit is set when a character has been read into the reader
+buffer.  The console-reset or power-on operation clears this flag.  If
+interrupts are enabled, this flag generates an interrupt request when set.
+
+<H3>Punch Buffer</H3>
+
+<PRE WIDTH="60">
+            00 01 02 03 04 05 06 07 08 09 10 11
+            ___________________________________
+           |  |  |  |  |  |  |  |  |  |  |  |  |
+           |__|__|__|__|__|__|__|__|__|__|__|__|
+           |           |                       |
+           |  Ignored  |    Keyboard Buffer    |
+</PRE>
+The punch buffer register holds the character that is to be punched
+on tape.  Modifying this register while it is being used to generate output
+may produce unpredictable results.
+
+<H3>Punch Flag</H3>
+
+The punch flag bit is set when the character most recently loaded in
+the punch buffer has been output.  The console-reset or power-on
+operation clears this flag.  If interrupts are enabled, this flag generates
+an interrupt request when set.
+
+<H3>Interrupt Enable</H3>
+
+This register is not present on high-speed paper-tape reader punch interfaces
+prior to the PC8E (M840).
+
+<H3>End-of-tape flag</H3>
+
+This register is only present in the IOmec paper-tape interface.
+Set by end-of-tape if enabled and if the attached reader is equipped to
+detect this condition.  The console-reset or power-on
+operation clears this flag.  If interrupts are enabled, this flag generates
+an interrupt request when set.
+
+<H3>Reader command register</H3>
+
+<PRE WIDTH="60">
+            00 01 02 03 04 05 06 07 08 09 10 11
+            ___________________________________
+           |  |  |  |  |  |  |  |  |  |  |  |  |
+           |__|__|__|__|__|__|__|__|__|__|__|__|
+           |                          |  |  |  |
+           |         Ignored          |RE FE D |
+</PRE>
+
+This register is only present in the IOmec paper-tape interface.  The
+register is set to zero on reset, and can be ignored for most IOmec
+readers.  The 3 bits are:
+<UL>
+<LI>D - Direction;  0 = forward, 1 = reverse
+<LI>FE - Forward end-of-tape detection enabled if 1
+<LI>RE - Reverse end-of-tape detection enabled if 1
+</UL>
+The end-of-tape enable bits are cleared when the end-of-tape flag is
+set, and the end-of-tape flag cannot be set unless at least one of these
+bits is one.  Some paper-tape readers may be configured to use
+the end-of-tape enable bits to enable tape movement in the indicated
+direction.
+
+<H2><A NAME=format>Instruction Format</A></H2>
+
+<PRE WIDTH="60">
+            00 01 02 03 04 05 06 07 08 09 10 11
+            ___________________________________
+           | 1| 1| 0| 0| 0| 0| 0| x| x|  |  |  |
+           |__|__|__|__|__|__|__|__|__|__|__|__|
+           |        |                 |        |
+           |  IOT   |      Device     |   Op   |
+</PRE>
+The high-speed paper-tape reader/punch is always connected as
+devices 01 and 02.
+
+<H2>Input Instructions</H2>
+
+<H3><A NAME=rpe>6010 - RPE</A> Reader Punch Enable </H3>
+
+<PRE WIDTH="60">
+	RPE
+</PRE>
+<P>
+The interrupt enable bit is set.  This is not supported by the
+interfaces on PDP-8 models prior to the PDP-8/E, and thus should be
+avoided in portable code.
+
+<H3><A NAME=rsf>6011 - RSF</A> Reader Skip if Flag </H3>
+
+<PRE WIDTH="60">
+	RSF
+</PRE>
+<P>
+If the reader flag is set, indicating that input data is ready, the next
+instruction in sequence is skipped.  All PDP-8 reader interfaces support
+this operation.
+<P>
+
+<H3><A NAME=rrb>6012 - RRB</A> Read Reader Buffer </H3>
+
+<PRE WIDTH="60">
+	RRB
+</PRE>
+<P>
+The reader buffer is ored with the accumulator.  All PDP-8 paper tape interfaces
+support this operation.  This instruction also clears the reader flag.
+<P>
+
+<H3><A NAME=rrbrsf>6013 - RRB RSF</A> (IOmec only)</H3>
+<P>
+For pre-omnibus DEC reader interfaces, this was a never used microcoded
+combination of RRB and RSF.  For DEC's PC8E interface, it was undefined.
+IOmec stole this combination and used it to load a command from the
+accumulator into the reader's command register.
+<P>
+
+<H3><A NAME=rfc>6014 - RFC</A> Reader Flag Clear </H3>
+
+<PRE WIDTH="60">
+	RFC
+</PRE>
+<P>
+Clear the reader flag and initiate the reading of the next character from
+tape.  The reader flag will be set by the completion of the read operation.
+All PDP-8 paper tape interfaces support this operation.
+<P>
+
+<H3><A NAME=rfcrsf>6015 - RFC RSF</A> (IOmec only)</H3>
+<P>
+For pre-omnibus DEC reader interfaces, this was a rarely used microcoded
+combination of RFC and RSF.  For DEC's PC8E interface, it was undefined.
+IOmec stole this combination and used it to skip the next instruciton in
+sequence if the end-of-tape flag was set.
+<P>
+
+<H3><A NAME=rrbrfc>6016 - RRB RFC</A> read buffer and continue </H3>
+
+<PRE WIDTH="60">
+	RRB RFC
+</PRE>
+
+<P>
+The reader buffer is ored to the accumulator, the reader flag is cleared,
+and the read of the next character is initiated.
+This operation is documented as a microcoded combination of <code>RRB</code>
+and <code>RFC</code>; but in the PC8E interface, it is decoded as a distinct
+operation.  All PDP-8 paper tape interfaces support this operation.
+<P>
+
+<H3><A NAME=rfcrrbrsf>6017 - RFC RRB RSF</A> (IOmec only)</H3>
+<P>
+For pre-omnibus DEC reader interfaces, this was a never used microcoded
+combination of RFC, RRB and RSF.  For DEC's PC8E interface, it was undefined.
+IOmec stole this combination and used it to clear the end-of-tape flag.
+<P>
+
+<H2>Output Instructions</H2>
+
+<H3><A NAME=pce>6020 - PCE</A> Punch Clear Enable </H3>
+
+<PRE WIDTH="60">
+	PCE
+</PRE>
+
+<P>
+The interrupt enable bit is reset.  This
+is not supported by the interfaces on PDP-8 models prior to the
+PDP-8/E, and thus should be avoided in portable code.
+
+<H3><A NAME=psf>6021 - PSF</A> Punch Skip if Flag </H3>
+
+<PRE WIDTH="60">
+	PSF
+</PRE>
+
+<P>
+If the punch flag is set, indicating output is complete, the next
+instruction in sequence is skipped.  All PDP-8 punch interfaces support
+this operation.
+
+<H3><A NAME=PCf>6022 - PCF</A> Punch Clear Flag</H3>
+
+<PRE WIDTH="60">
+	PCF
+</PRE>
+
+<P>
+The punch flag is reset.  All PDP-8 paper tape interfaces
+support this operation.
+
+<H3><A NAME=ppc>6024 - PPC</A> Punch Put Character</H3>
+
+<PRE WIDTH="60">
+	PPC
+</PRE>
+
+<P>
+The least significant 8-bits of the accumulator is copied to the punch
+buffer, initiating output.  All PDP-8 paper tape interfaces support this
+operation.
+
+<H3><A NAME=pls>6026 - PLS</A> Punch Load Sequence </H3>
+
+<PRE WIDTH="60">
+	PLS
+</PRE>
+
+<P>
+The least significant 8 bits of the accumulator are copied to the punch buffer,
+initiating output, and the punch flag is reset.
+This operation is a microcoded combination of <code>PCF</code> and
+<code>PPC</code>; but in the PC8E interface, it is decoded as a distinct
+operation.  All PDP-8 paper tape interfaces support this operation.
+
+
+<H2><A NAME=conventions>Programming Conventions</A></H2>
+
+Typical PDP-8 assembly language programs begin by defining the necessary
+IOT instructions.  In the case of the paper-tape reader-punch, most PDP-8
+assemblers predefine these symbols appropriately, as follows:
+<PRE>
+	RSF=	6011	/ Reader Skip if Flag
+	RRB=	6012	/ Read Reader Buffer
+	RFC=	6014	/ Reader Flag Clear
+	PSF=	6021	/ Punch Skip if Flag
+	PCF=	6022	/ Punch Clear Flag
+	PPC=	6024	/ Punch Put Character
+	PLS=	6026	/ Punch Load Sequence
+</PRE>
+<P>
+One problem with the design of the punch interface is that the punch flag,
+like all device flags, is cleared on reset and powerup, but for many purposes,
+it would be better to have this flag set, indicating that, at startup time,
+the punch buffer register is ready to receive one character of output.
+The traditional startup code accomplishes this by outputting a null, since,
+on input, nulls are usually expected as leader:
+<PRE>
+	/ initialize the punch for output
+		CLA
+		PPC		/ output null
+</PRE>
+Given this initialization, the following two subroutines (or variations
+on them) are commonly used in most PDP-8 programs for polled paper tape
+input-output:
+<PRE>
+	PTRIN,	.-.		/Read from paper tape reader
+	/			  returns character in ac
+	PTRLP,	RSF		/ await input ready
+		JMP	PTRLP
+		CLA
+		RRB RFC		/ read character
+		JMP I	PTRIN
+
+	PTPOUT,	.-.		/Write to paper tape punch
+	/			  given character in ac
+	PTPLP,	PSF		/ await input ready
+		JMP	PTPLP
+		PLS		/ write character
+		JMP I	PTPOUT
+</PRE>
+
+</BODY>
+</HTML>

@@ -1,0 +1,53 @@
+<html><head>
+<!-- Based on MIT PDP-10 'Info' File by ??? -->
+<!-- This html version Copyright (c) 1995 by Henry G. Baker. -->
+<link rev="made" href="mailto:hbaker@netcom.com">
+<title>PDP-10 Intro</title></head><body>
+MIT PDP-10 'Info' file converted to Hypertext 'html' format by <a href="ftp://ftp.netcom.com/pub/hb/hbaker/home.html">Henry Baker</a><p>
+
+<a href="pdp-10.html">Up</a>
+<a href="pdp-10.html">Previous</a>
+<a href="Memory.html">Next</a>
+
+<h1>Introduction to PDP-10 Assembly Language Programming</h1>
+
+The PDP-10 is a general purpose stored program computer.  There are four
+different processors (computers) in the PDP-10 family (the PDP-6, the KA10,
+the KI10 and the KL10).  This file discusses primarily the KA-10 version,
+which is what most of the ITS systems are.<p>
+
+There are three principal aspects of assembly language programming:
+the machine instructions, the assembler, and the operating system.<p>
+
+The machine instructions are the primitive operations with which we
+write programs.  Learning the instruction set means learning what
+operations are performed by each instruction.  Programming is the art
+or science of combining these operations to accomplish some
+particular task.<p>
+
+The machine instructions, like everything else in a computer, are in
+binary.  The assembler is a program that translates the mnemonic
+names by which we refer to instructons into the binary form that the
+computer recognizes.  The assembler also does a variety of other
+chores that are essentially bookkeeping.  There are several assemblers
+for the PDP-10, which differ in various ways; what they all have in
+common is the PDP-10 machine instructions, which are described in this
+file.  Everything else about how to use a particular assembler is
+documented under that assembler.  The assembler used most on ITS is
+called MIDAS; *Note MIDAS: (MIDAS).<p>
+
+The operating system is a special program that handles all input and
+output and which schedules among user programs.  For its own
+protection and the protection of other users the operating system
+places various restrictions on user programs.  User mode programs are
+resticted to memory assigned to them by the operating system; they
+may not perform any machine input-output instructions, nor can they
+perform several other restricted operations (e.g., HALT instruction).
+To facilitate user input-output and core allocation the operating
+system provides various system calls (UUO or JSYS operations) by
+which a user program can communicate its wishes to the system.
+Essentially all programs except the operating system itself are run
+as user mode programs.  Editors, assemblers, compilers, utilities,
+and programs that you write yourself are all user mode programs.
+
+</body></html>

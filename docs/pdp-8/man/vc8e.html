@@ -1,0 +1,475 @@
+
+
+
+
+
+
+
+
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+
+<HTML LANG="en">
+ <HEAD>
+  <TITLE>PDP-8 Point-Plot Display Instructions</TITLE>
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+  <META name="viewport" content="width=device-width, initial-scale=1">
+  <META name="Author" content="Douglas W. Jones">
+  <META name="Language" content="English">
+  <META name="editor" content="/usr/bin/vi">
+  
+  
+  
+  <STYLE TYPE="text/css">
+   BODY { margin-left: 3%; margin-right: 3%; }
+   H2.SQUAT { margin-top: 0.4em; margin-bottom: 0.25em; }
+   H3.SQUAT { margin-top: 0.3em; margin-bottom: 0.2em; }
+   H4.SQUAT { margin-top: 0.2em; margin-bottom: 0.15em; }
+   H5.SQUAT { margin-top: 0.17em; margin-bottom: 0.15em; }
+   * { line-height: 1.1 }
+   P.SQUAT { margin-top: 0.25em; margin-bottom: 0.15em; }
+   UL.SQUAT { margin-top: 0.25em; margin-bottom: 0.15em; }
+   EM.O { font-style: normal; text-decoration: overline; }
+   EM.U { font-style: normal; text-decoration: underline; }
+   EM.S { font-style: normal; text-decoration: line-through; }
+   A { text-decoration: none; }
+   A.I { font-style: italic; text-decoration: none; }
+   SUP { vertical-align: 0; position: relative; bottom: 1ex; }
+   SUB { vertical-align: 0; position: relative; top: 0.8ex; }
+   TABLE.BOXY { border: 0; padding: 0; border-spacing: 0;
+                border-collapse: collapse; }
+   TD.BOX { border: solid; border-width: thin; border-color: DimGray;
+	      text-align: center; }
+   TD.BOXTT { border: solid; border-width: thin; border-color: DimGray;
+	      font-family: monospace; text-align: center; }
+   TD.TT { font-family: monospace; text-align: left; }
+   TD.TTSPACE { font-family: monospace; text-align: left; color: white }
+   TD.SHADE { background: Silver; text-align: center; }
+   CAPTION { padding-top: 6px; }
+   DIV.HEADBOX { border: groove; border-width: 2px; background: #F0F0E0; padding-top: 1%; padding-bottom: 1%; padding-left: 5px; }
+   DIV.HEADBOX P { margin-top: 0.8em; margin-bottom: 0.8em; }
+   DIV.HEADBOX H1 { margin-top: 0.2em; margin-bottom: 0.4em; }
+   DIV.HEADBOX H2 { margin-top: 0.2em; margin-bottom: 0.4em; }
+   DIV.INDENT { border: none; padding-left: 1em }
+   DIV.INVISIBLE { font-size: 3px; letter-spacing: -5px; color: white; background: white; }
+   DIV.INVISIBLE A:link { color: white; }
+   DIV.INVISIBLE A:visited { color: white; }
+   DIV.INVISIBLE A:active { color: white; }
+   DIV.invisible A:active { color: white; background: white; }
+  </STYLE>
+ </HEAD>
+ <BODY BGCOLOR="#FFFFFF" TEXT="#000000" link="#0000CC" vlink="#880088" alink="#880088">
+  <DIV CLASS=HEADBOX>
+   
+     <IMG SRC="http://www.cs.uiowa.edu/~jones/pdp8/logos/pdp8.gif"
+      HEIGHT="65"
+      WIDTH="65"
+      ALT="(none)"
+      HSPACE="5"
+      ALIGN=left
+     >
+     <IMG SRC="http://www.cs.uiowa.edu/~jones/transpix.gif"
+      ALT=" "
+      WIDTH="75%"
+      HEIGHT="1"
+     >
+    <DIV>
+   
+   <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0"><TR><TD>&nbsp;&nbsp;<TD>
+    
+     <H1>The Digital Equipment Corporation PDP-8</H1>
+    
+    
+     <H2>Point-Plot Display Instructions</H2>
+    
+    <P>
+    
+     Part of <A HREF="index.html">
+      
+      the PDP-8 Programmer's Reference Manual
+      
+     </A>
+     <BR>
+     
+    
+    
+     by
+     <A HREF="http://www.cs.uiowa.edu/~jones/">Douglas W. Jones</A>
+     
+     <BR>
+    
+    
+    <A HREF="http://www.uiowa.edu/">
+     T<SMALL>HE</SMALL> U<SMALL>NIVERSITY</SMALL>
+    <SMALL>OF</SMALL> I<SMALL>OWA</SMALL></A>
+    <A HREF="http://www.cs.uiowa.edu/">Department&nbsp;of&nbsp;Computer&nbsp;Science</A>
+    
+    
+    
+   </TABLE>
+    
+     </DIV>
+    
+  </DIV>
+ 
+
+
+
+<P>
+This document describes VC8E (M885/M869) OMNIBUS point-plot display sold
+with the PDP-8/E, -8/F, -8/M and -8/A computers.
+Earlier point-plot display interfaces on the PDP-8
+family were not compatable with the VC8E!  Point-plot display interfaces
+allow the computer to directly control the X and Y deflection voltage output
+to CRT displays and analog plotters.
+
+<H2>Index</H2>
+<UL>
+<LI><A HREF="vc8e.html#registers">Device Registers</A>.
+<LI><A HREF="vc8e.html#format">Instruction Format and Device Addresses</A>.
+<LI>Instructions.
+<BR><A HREF="vc8e.html#dilc">6050 - DILC Display Logic Clear</A>
+<BR><A HREF="vc8e.html#dicd">6051 - DICD Display Clear Done flag</A>
+<BR><A HREF="vc8e.html#disd">6052 - DISD Display Skip on Done</A>
+<BR><A HREF="vc8e.html#dilx">6053 - DILX Display Load X</A>
+<BR><A HREF="vc8e.html#dilx">6054 - DILY Display Load Y</A>
+<BR><A HREF="vc8e.html#dixy">6055 - DIXY Display Intensify at (X,Y)</A>
+<BR><A HREF="vc8e.html#dile">6056 - DILE Display Load Enable status register</A>
+<BR><A HREF="vc8e.html#dire">6057 - DIRE Display Read Enable status register</A>
+<LI><A HREF="vc8e.html#conventions">Programming Conventions.</A>
+</UL>
+
+<HR>
+
+<H2><A NAME=registers>Device Registers</A></H2>
+
+To control the display, the computer outputs
+X and Y values, as analog signals, and outputs a pulse every time the
+CRT beam is to be energised to plot a display point.  Additional outputs
+are provided on the VC8E to control storage scopes and two-color displays;
+these can also, presumably, be used for such functions as pen up/down on
+analog plotters.
+<P>
+
+<H3>X and Y Registers</H3>
+
+<PRE WIDTH="60">
+            00 01 02 03 04 05 06 07 08 09 10 11
+            ___________________________________
+           |  |  |  |  |  |  |  |  |  |  |  |  |
+           |__|__|__|__|__|__|__|__|__|__|__|__|
+           |     |                             |
+           |               Coordinate          |
+           |                                   |
+</PRE>
+The X and Y coordinate registers are write-only registers that hold the
+coordinates to be converted to analog form for presentation on the output
+device.  On the VC8E, as with most earlier PDP-8 display interfaces, only
+the least significant 10 bits of each register is used.  The value is
+interpreted as a 2's complement value, with 0000 representing the center
+of the display area and negative values to the lower (on the Y axis) or
+left (on the X axis) side of the screen.
+<P>
+
+<H3>Enable/Status Register</H3>
+
+<PRE WIDTH="60">
+            00 01 02 03 04 05 06 07 08 09 10 11
+            ___________________________________
+           |  |  |  |  |  |  |  |  |  |  |  |  |
+           |__|__|__|__|__|__|__|__|__|__|__|__|
+           |  |              |  |  |  |  |  |  |
+           |DN|   Ignored    |WT ST ER CO CH IE|
+</PRE>
+Note that bits 1 to 5 were not stored in the enable status register,
+and that bits 6 to 9 (WT through CO) were well documented but only
+implemented on VC8E systems based on M869 Rev D or higher and M885 Rev F
+or higher.  
+
+<UL>
+<LI><TT>IE --</TT> Interrupt Enable
+<LI><TT>CH --</TT> Channel
+<LI><TT>CO --</TT> Color
+<LI><TT>ER --</TT> Erase (write only)
+<LI><TT>ST --</TT> Store
+<LI><TT>WT --</TT> Write Through
+<LI><TT>DN --</TT> Done (read only)
+</UL>
+
+The IE and DN bits are used with all displays.  DN indicates that the
+interface has finished its most recent command.  If interrupts are enabled,
+the interface will request an interrupt when DN is asserted.
+<P>
+The CH bit is intended for use with addressable displays such as the VR14
+and VR20.  These displays decode this one-bit address line and ignore
+intensify commands if the CH output does not equal the selected display.
+This allows one VC8E interface to control two displays.  When used with
+pen plotters, the CH bit is the recommended control for pen-up/pen-down;
+this is driven by a TTL line driver.
+<P>
+The CO bit is intended for use with two-color displays such as the VR20.
+On that display, a one in this bit causes a red display, while a zero causes
+a green display.  If any VR20 displays were ever sold, they were discontinued
+by August of 1973, and this bit is only supported on VC8E interfaces using
+M869 Rev D or higher and M885 Rev F or higher.
+<P>
+The ER, ST and WT bits are intended for use with storage scopes such as the
+Tektronix 611 or 613.  Outputting a one to ER will cause an erase pulse,
+If ST is off, the storage scope will not be in store mode.  If ST is on,
+the flood beam will be turned on, causing a faint green background glow and
+causing plotted points to be stored.  The WT bit causes the writing beam to
+be defocused during the intensify pulse, displaying a non-storing dim
+ellipse instead of a stored point.   
+These bits are only supported on VC8E interfaces using M869 Rev D or higher
+and M885 Rev F or higher.
+<P>
+
+<H2><A NAME=format>Instruction Format and Device Addresses</A></H2>
+<PRE>
+            00 01 02 03 04 05 06 07 08 09 10 11
+            ___________________________________
+           | 1| 1| 0| 0| 0|  | 1| 0| 1|  |  |  |
+           |__|__|__|__|__|__|__|__|__|__|__|__|
+           |        |                 |        |
+           |  IOT   |       VC8E      |   Op   |
+</PRE>
+The point plot display was usually connected as device 05, and the fixed
+op-codes used for point plot display instructions assume this.  An optional
+second VC8E could be connected at address 15 by changing the jumpering of
+W1 and W2 on the M869.
+<P>
+
+<H2>Instructions</H2>
+
+<H3><A NAME=dilc>6050 - DILC</A> Display Logic Clear </H3>
+
+<PRE WIDTH="60">
+	DILC
+</PRE>
+<P>
+Clear all display flags, disable interrupts and reset done.  This is
+equivalent to a console reset.
+Not supported by the display interfaces on PDP-8 models prior to the
+PDP-8/E, and thus should be avoided in portable code.
+<P>
+
+<H3><A NAME=dicd>6051 - DICD</A> Display Clear Done </H3>
+
+<PRE WIDTH="60">
+	DICD
+</PRE>
+<P>
+Resets DN (the done flag) in the command/status register.
+<P>
+
+<H3><A NAME=disd>6052 - DISD</A> Display Skip if Done </H3>
+
+<PRE WIDTH="60">
+	DISD
+</PRE>
+<P>
+Skips the next instruction if DN (the done flag) is set; does not clear DN.
+<P>
+
+<H3><A NAME=dilx>6053 - DILX</A> Display Load X </H3>
+<H3>6054 - DILY Display Load Y </H3>
+
+<PRE WIDTH="60">
+	DILX
+	DILY
+</PRE>
+<P>
+The contents of the accumulator is loaded into the X or Y register; this does
+not clear the accumulator.  Both the DILX and DILY commands set the done
+flag after an appropriate interval determined by the display type.
+<P>
+The digital to analog converters in the VC8E have a settling time of 4
+microseconds and an output swing of +/- 5 volts.
+<P>
+On the VC8E, switch SW2 on the M869 board selects between a 21 microsecond
+delay for the VR14/VR20 and a 6 microsecond delay for the Tektronix
+602, 611 and 613.  A single timer is shared by both the DILX and DILY commands;
+if either DILX or DILY are called while this timer is active, it will be
+reset.
+<P>
+
+<H3><A NAME=dixy>6055 - DIXY</A> Display Intensify at (X,Y)</H3>
+
+<PRE WIDTH="60">
+	DIXY
+</PRE>
+
+<P>
+An 1 microsecond intensify pulse is output to the display, causing a spot
+to be displayed at the current X and Y locations.  This should be done only
+when DN (the done flag) has been set indicating that the X and Y digital to
+analog converters have settled after the most recent DILX or DILY;
+if not, the displayed point may not be at the intended location.
+<P>
+The intensify pulse polarity is set by switch SW1 on the M869;
+the intensify pulse duration is determined by a capacitor on the M869.
+The standard intensify pulse swings from +4 to -2 volts, but jumper AB on
+the M885 board can be used to change this to +4 to -10.
+<P>
+
+<H3><A NAME=dile>6056 - DILE</A> Display Load Enable status register </H3>
+
+<PRE WIDTH="60">
+	DILE
+</PRE>
+
+<P>
+The enable/status register is loaded from the accumulator, and the accumulator
+is cleared.  This does not load DN (the done flag).
+<P>
+If the ER (erase) bit is set in the value loaded,
+and if the VC8E is equipped to handle this option, an erase cycle begins.
+This will cause a 450 millisecond erase pulse to be output, after which
+the DN (done) flag will be set.  On the Tektronix 611 and 613 storage scopes,
+the erase pulse will cause a bright green flash as it erases the stored
+information.
+<P>
+If the CO (color) bit changes because of the value loaded,
+and if the VC8E is equipped to handle this option, a timer will be
+started to set the DN (done) bit after either 300 microseconds (green to
+red) or 1600 microseconds (red to green).  These delays correspond to the
+time taken by the VR20 display for these color changes.
+<P>
+
+<H3><A NAME=dire>6057 - DIRE</A> Display Read Enable status register </H3>
+
+<PRE WIDTH="60">
+	DIRE
+</PRE>
+
+<P>
+The contents of the enable/status register are read into the accumulator.
+ER (erase) and any unimplemented bits are always read as zero.
+<P>
+
+<H2><A NAME=conventions>Programming Conventions</A></H2>
+
+Typical PDP-8 assembly language programs begin by defining the necessary
+IOT instructions.  In the case of display output, most PDP-8
+assemblers do not predefine these symbols, so they must be defined as follows:
+<PRE>
+	DILC=	6050	/ Display logic clear
+	DICD=	6051	/ Display clear done
+	DISD=	6052	/ Display skip if done
+	DILX=	6053	/ Display load x
+	DILY=	6054	/ Display load y
+	DIXY=	6055	/ Display intensify at (x,y)
+	DILE=	6056	/ Display load enable
+	DIRE=	6057	/ Display read enable
+</PRE>
+<P>
+Given these definitions, here is a routine to display one point, given a
+pointer to the XY pair, in memory:
+<PRE>
+	DSPDOT,	.-.		/Display dot on CRT
+	/			  takes addr of XY pair in AC
+	/			  returns AC=null
+		CMA IAC
+		CMA		/ decrement pointer
+		DCA	X1	/ put in autoindex reg
+		TAD I	X1	/ get X
+		DILX
+		CLA
+		TAD I	X1	/ get Y
+		DILY
+		DISD		/ wait for settling interval
+		JMP	.-1
+		DIXY		/ display point
+		CLA
+		JMP I	DSPDOT	/ return
+</PRE>
+In fact, this is not a very sensible way to write the code, since it
+wastes time while the X and Y outputs settle that could be spent on
+some other purpose.  Graphics display software using a point-plot interface
+without a storage scope must contantly cycle through the list of points to
+display, the display-list; as a result, it makes far more sense to re-write
+the above code as follows:
+<PRE>
+	DSPDOT,	.-.		/Display dot on CRT
+	/			  takes addr of XY pair in AC
+	/			  returns AC=null
+		CMA IAC
+		CMA		/ decrement pointer
+		DCA	X1	/ put in autoindex reg
+		DISD		/ wait until done
+		JMP	.-1
+		DIXY		/ display previous point
+		TAD I	X1	/ get X for new point
+		DILX
+		CLA
+		TAD I	X1	/ get Y for new point
+		DILY
+		CLA
+		JMP I	DSPDOT	/ return
+</PRE>
+One weakness of this code is that, before the very first call to DSPDOT,
+the X and Y registers are uninitialized.  As a result, one random dot will
+be plotted before the first cycle through the display list; unless a storage
+scope is in use, this will not cause any problem because the spot will fade
+in a few milliseconds.
+<P>
+DEC's small computer handbook suggests the following fun program for the
+VC8E to display kaleidoscopic patterns of arcs and dots on the screen:
+<PRE>
+	/ Kaleidoscope program for the VC8E/VR14 scope.
+	/ Based on suggestions from page 6-19 of the Small Computer
+	/ Handbook, 1973.
+
+	/ The advice given is to experiment with settings of
+	/ the switch register bit positions 9, 10 and 11, leaving
+	/ all higher bits zero.  The advice is good; this is a
+	/ nice "screen saver" for non-storage scopes.
+
+	DISD=   6052
+	DILX=   6053
+	DILY=   6054
+	DIXY=   6055
+
+	*       200
+	START,  TAD     Y
+		JMS     SCALE
+		CMA
+		TAD     X
+		DCA     X       / X = X - SCALE(Y)
+		TAD     X
+		DILX
+		JMS     SCALE
+		TAD     Y
+		DILY
+		DISD
+		JMP     .-1
+		DIXY
+		DCA     Y       / Y = Y - SCALE(X)
+		JMP     START
+
+	X,      3777            / any initial value works, but
+	Y,      6               / 0,0 is least interesting.
+
+	/ Divide AC by 2**SR
+	SCALE,  .-.
+		DCA     TEM
+		OSR
+		CIA
+		DCA     C
+		TAD     TEM
+		CLL
+		SPA
+		CML
+		RAR             / Arithmetic right shift
+		ISZ     C
+		JMP     .-5
+		JMP I   SCALE
+
+	TEM,    .-.
+	C,      .-.
+
+	$
+</PRE>
+</BODY>
+</HTML>

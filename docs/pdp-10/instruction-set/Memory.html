@@ -1,0 +1,32 @@
+<html><head>
+<!-- Based on MIT PDP-10 'Info' File by ??? -->
+<!-- This html version Copyright (c) 1995 by Henry G. Baker. -->
+<link rev="made" href="mailto:hbaker@netcom.com">
+<title>PDP-10 Memory</title></head><body>
+MIT PDP-10 'Info' file converted to Hypertext 'html' format by <a href="ftp://ftp.netcom.com/pub/hb/hbaker/home.html">Henry Baker</a><p>
+
+<a href="Intro.html">Previous</a>
+<a href="pdp-10.html">Up</a>
+<a href="IFormat.html">Next</a>
+
+<h1>Memory</h1>
+
+In programming the PDP-10 it is convenient to imagine that your
+program occupies contiguous virtual memory locations from 0 to some
+maximum address.  All memory locations are equivalent for most
+purposes (but some operating systems reserve some of your space for
+their own purposes).
+
+<h1>Accumulators</h1>
+
+Sixteen memory locations (addresses 0 to 17 - note that addresses
+will appear in octal) are distinguished by their use as general
+purpose registers (also called accumulators or index registers).
+Most PDP-10 instructions address one memory operand and one
+accumulator (so-called "one and a half address" architecture).  This
+means that nearly all instruction affect some accumulator.  These
+registers are actually implemented in high speed solid state memory
+rather than in slower core.  For any purpose where it is convenient
+to do so, a user may reference an accumulator as memory.
+
+</body></html>

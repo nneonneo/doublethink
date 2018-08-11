@@ -1,0 +1,194 @@
+<html><head>
+<!-- Based on MIT PDP-10 'Info' File by ??? -->
+<!-- This html version Copyright (c) 1995 by Henry G. Baker. -->
+<link rev="made" href="mailto:hbaker@netcom.com">
+<title>PDP-10 Calculator</title></head><body>
+MIT PDP-10 'Info' file converted to Hypertext 'html' format by <a href="ftp://ftp.netcom.com/pub/hb/hbaker/home.html">Henry Baker</a><p>
+
+<a href="EvenOdd2.html">Previous</a>
+<a href="pdp-10.html">Up</a>
+<a href="FileIO.html">Next</a>
+
+<h1>Arithmetic Calculator Program.</h1>
+
+This program will read an arithmetic expression composed of numbers and the
+operators +, -, * and /, compute the value and type the result.  It shows how
+to read and print numbers.  It does not know about operator precedence; it
+does operations from left to right always.
+
+<pre>
+        TITLE   NUM
+FL=0
+A=1
+B=2
+C=3
+D=4
+P=17
+
+CHTTYI==1
+CHTTYO==2
+
+;FLAG NAMES
+NEGF==1
+DIGF==2
+
+PDLLEN==100
+PDL:    BLOCK PDLLEN
+OP1:    0
+X1:     0
+
+LINBUF: BLOCK 30
+LINBFE::
+
+LINPTR: 0
+
+START:  MOVE P,[-PDLLEN,,PDL-1]
+                                ;Open TTY channels.
+        .CALL [SETZ ? SIXBIT/OPEN/
+                [.UAI,,CHTTYI] ? [SIXBIT/TTY/] ((SETZ))]
+         .LOSE %LSFIL
+        .CALL [SETZ ? SIXBIT/OPEN/
+                [.UAO,,CHTTYO] ? [SIXBIT/TTY/] ((SETZ))]
+         .LOSE %LSFIL
+START1: PUSHJ P,GETLIN          ;Read in a line of input.
+        MOVE A,[440700,,LINBUF]
+        MOVEM A,LINPTR          ;Set up to fetch chars from the line.
+        PUSHJ P,EVAL            ;Parse and evaluate expression.
+        PUSHJ P,DECOUT          ;Print the answer.
+        MOVEI A,[ASCIZ/
+/]
+        PUSHJ P,OUTSTR
+        JRST START1
+
+;Read and evaluate an expression.  Value returned in A.
+;Clobbers B.
+EVAL:   PUSHJ P,DECIN           ;Read one number.
+        MOVEM B,OP1             ;Save the number.
+EVAL1:  MOVEI B,0
+        CAIN A,"+               ;Consider the operation character:
+         MOVE B,[ADD B,OP1]     ;B gets an instruction to do that operation.
+        CAIN A,"-
+         MOVE B,[SUB B,OP1]
+        CAIN A,"*
+         MOVE B,[IMUL B,OP1]
+        CAIN A,"/
+         MOVE B,[IDIV B,OP1]
+        JUMPE B,EVALX           ;If B is still 0, the terminator
+                                ;was not an arith op, so it ends
+                                ;the expression or is illegal.
+        MOVEM B,X1              ;It is an arith op, so save the instruction.
+        PUSHJ P,DECIN           ;Read the second operand.
+        EXCH B,OP1              ;B gets first op, OP1 gets second operand.
+        XCT X1                  ;Compute result of operation, in B.
+        MOVEM B,OP1             ;Save it as first operand of next operation.
+        JRST EVAL1              ;A has terminator of second operand,
+                                ;which is the next operation.
+
+;Come here on number terminated by char not an arith op.
+EVALX:  JUMPN A,ERR             ;Should be end of line, or it's an error.
+        MOVE A,OP1              ;Otherwise, last saved value is value of exp.
+        POPJ P,
+
+;Print an error message if we see something we don't recognize.
+ERR:    MOVEI A,[ASCIZ/Unrecognized character in expression: /]
+        PUSHJ P,OUTSTR
+        LDB A,LINPTR            ;Print the offending character
+        .IOT CHTTYO,A           ;as part of the error message.
+        MOVEI A,[ASCIZ /
+/]
+        PUSHJ P,OUTSTR
+        JRST START1
+
+;Read a signed decimal number out of the line, returning number in B
+;and terminating character in A.
+DECIN:  TRZ FL,NEGF!DIGF        ;No minus, no digit seen yet.
+        MOVEI B,0
+DECIN1: ILDB A,LINPTR           ;Fetch next character of line.
+        CAIL A,"0
+         CAILE A,"9
+          JRST DECIN2           ;Jump if character not a digit.
+        IMULI B,10.             ;Else accumulate this digit into the number.
+        ADDI B,-"0(A)           ;Note that we convert the digit into its value.
+                                ;("0 into the value 0, "1 into 1).
+        TRO FL,DIGF             ;Set flag saying non-null number seen.
+        JRST DECIN1
+
+DECIN2: CAIN A,"-
+         JRST DECIN3            ;Jump on minus sign.
+        TRNN FL,DIGF            ;Anything else: if we saw a number,
+         POPJ P,                ;negate it if it began with a minus sign.
+DECIN4: TRZE FL,NEGF
+         MOVN B,B
+        POPJ P,
+
+;Come here after reading a minus sign.
+DECIN3: TRNE FL,DIGF            ;Does it follow a number?
+         JRST DECIN4            ;Yes.  This must be a binary minus.
+        TRC FL,NEGF             ;This must be unary minus.
+                                ;Complement flag that number is negative.
+        JRST DECIN1             ;(So that two minus signs cancel out).
+
+;Print number in A, positive or negative, in decimal.
+;Clobbers A and B.
+DECOUT: JUMPGE A,DECOT1
+        .IOT CHTTYO,["-]        ;If number is negative, print sign.
+        CAMN A,[400000,,]       ;Smallest negative number is a pain:
+         JRST DECOT2            ;its absolute value cannot fit in one word!
+        MOVM A,A                ;Else get abs val of negative number and print.
+DECOT1: IDIVI A,10.
+        HRLM B,(P)              ;Save remainder in LH of stack word
+                                ;whose RH contains our return address.
+        SKIPE A                 ;If quotient is nonzero,
+         PUSHJ P,DECOT1         ;print higher-order digits of number.
+        HLRZ A,(P)              ;Get back this remainder (this digit).
+        ADDI A,"0
+        .IOT CHTTYO,A
+        POPJ P,
+
+;Print the abs value of the largest negative number.
+DECOT2: MOVEI A,[ASCIZ /34359738368/]
+        JRST OUTSTR
+
+;Copy the GETLIN and OUTSTR subroutines here.
+
+        END     START
+</pre>
+
+<h2>NOTES</h2>
+
+<ul>
+<li>10.: This is a decimal number.  You can tell, because it ends
+with a decimal point.
+
+<li>LINPTR: this location holds the byte pointer used for fetching
+characters out of the line.  It is usually not worth while to keep
+this pointer in an accumulator if the parsing is being done over
+more than a very small piece of code.
+
+<li>XCT: Note how EVAL chooses an arithmetic instruction based on
+the arithmetic operator character, then reads the following argument,
+and then executes the instruction chosen earlier, performing the
+operation.  This is also the first use you have seen of literals
+containing instructions.
+
+<li>ERR: this is an example of printing an error message.  Error messages
+should always show the offending data, not just say "something was wrong".
+
+<li>DECIN: Note how flags in accumulator 0 (FL) are used to keep
+track of whether any digits have been seen, and whether a minus
+sign came before them.  Accumulator 0 is most often used for such flags
+because it is the least useful accumulator for anything else
+(since it cannot be used as an index register).
+
+<li>DECOUT: This is a very famous program for printing a number.
+It works recursively because the first digits extracted as the remainders
+in successive divisions by the radix are the last digits to be printed.
+So the digits are produced and saved on the way down the recursion,
+and printed on the way up.
+
+<li>HRLM: We could save the remainder with PUSH P,B and restore it
+with POP P,A, but since the left half of each word saved by a PUSHJ
+is not really going to be used, we can save stack space by using those
+left halves to store the remainder.  It is also faster.
+</ul>
+</body></html>

@@ -1,0 +1,70 @@
+<html><head>
+<!-- Based on MIT PDP-10 'Info' File by ??? -->
+<!-- This html version Copyright (c) 1995 by Henry G. Baker. -->
+<link rev="made" href="mailto:hbaker@netcom.com">
+<title>PDP-10 Addr-Comp</title></head><body>
+MIT PDP-10 'Info' file converted to Hypertext 'html' format by <a href="ftp://ftp.netcom.com/pub/hb/hbaker/home.html">Henry Baker</a><p>
+
+<a href="Terms.html">Previous</a>
+<a href="pdp-10.html">Up</a>
+<a href="Full-Word.html">Next</a>
+
+<h1>Effective Address Calculation</h1>
+
+All instructions without exception calculate an "effective address".
+The effective address gets its name because it is usually used as the
+address of an operand in memory.  Depending on the instruction, that
+operand might be read, written or both.  For some instructions, called
+"immediate" instructions, the effective address is not used to address
+memory; it is used directly, as a number, in the operation.  For
+example, the ADD instruction uses the effective address as the
+address of a location in memory, and uses the contents of that
+location in the addition.  The ADDI instruction (Add Immediate) uses
+the effective address itself as the number to add.<p>
+
+The effective address computation uses three fields of the instruction
+word: the 18-bit address field (Y), the index field (X), and the
+indirect bit (I).  The result is an 18-bit effective address.<p>
+
+If the X field and I bit are zero, the effective address is simply the
+contents of the address field (Y).<p>
+
+If the index field X is nonzero, then it is the number of an
+accumulator to use as an index rgister.  Any accumulator except
+accumulator 0 can be so used.  The right half of the contents of the
+index register is added to the address field (Y) from the instruction
+to get the effective address.<p>
+
+The I bit specifies indirect addressing.  If it is 1, then the result
+of the previous steps (Address field, or address field plus index
+quantity) is used as the address of an "indirect word".  From the
+contents of this indirect word, a new address field Y, index field X
+and indirect bit I are obtained.  Then the process starts from the
+beginning.  If the I bit in the indirect word is 1, a second indirect
+word is eventually fetched.  Indirection can happen any number of
+times, and only stops when an indirect word has 0 in its I bit.<p>
+
+The result of the effective address calculation may be thought of as
+an instruction word where bits 0:12 are copied from the original
+instruction, bits 13:17 are zero, and 18:35 contain the effective
+address.<p>
+
+The effective address computation is described by the following
+program.  MA means memory address.  PC means program counter.  C(MA)
+means contents of the word addressed by MA.
+
+<pre>
+IFETCH: MA &lt;- PC
+        OP &lt;- Bits  0:8  of C(MA);
+        AC &lt;- Bits  9:12 of C(MA);
+EACOMP: I  &lt;- Bit  13    of C(MA);
+        X  &lt;- Bits 14:17 of C(MA);
+        Y  &lt;- Bits 18:35 of C(MA);
+        E  &lt;- Y;
+        IF NOT(X=0) then E &lt;- E+C(X);
+        IF I=0 then go to done;
+        MA &lt;- E;
+        GO TO EACOMP;
+DONE:
+</pre>
+</body></html>

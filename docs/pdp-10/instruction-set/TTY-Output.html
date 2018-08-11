@@ -1,0 +1,95 @@
+<html><head>
+<!-- Based on MIT PDP-10 'Info' File by ??? -->
+<!-- This html version Copyright (c) 1995 by Henry G. Baker. -->
+<link rev="made" href="mailto:hbaker@netcom.com">
+<title>PDP-10 TTY-Output</title></head><body>
+MIT PDP-10 'Info' file converted to Hypertext 'html' format by <a href="ftp://ftp.netcom.com/pub/hb/hbaker/home.html">Henry Baker</a><p>
+
+<a href="Program.html">Previous</a>
+<a href="pdp-10.html">Up</a>
+<a href="Reverse.html">Next</a>
+
+<h1>Print the string FOO on the terminal.</h1>
+
+<pre>
+        TITLE   PRINT
+A=1                             ;Symbolic AC names are defined
+
+CHTTYO==1                       ;Channel for output
+                                ;== means don't use this symbol
+                                ;for symbolic typeout in DDT.
+
+START:                          ;Open TTY channel.
+        .CALL [SETZ ? SIXBIT/OPEN/
+                [.UAO,,CHTTYO] ? [SIXBIT/TTY/] ((SETZ))]
+         .LOSE %LSFIL
+        .IOT CHTTYO,["F]        ;Print F.
+        .IOT CHTTYO,["O]        ;Print O.
+        .IOT CHTTYO,["O]        ;Print O.
+        .VALUE                  ;Halt program.
+
+END START                       ;Tell MIDAS this is the end of the text
+                                ;and specify the address to start execution.
+</pre>
+
+<h2>NOTES:</h2>
+
+<ul>
+
+<li>CHTTYO: All I/O is done by means of I/O channels, of which
+there are sixteen, numbered 0 through 17.  It is best to make symbolic
+names for the channels you use and start them all with CH.  Define
+these names with the MIDAS operator ==, which is like = except that
+symbols defined with == are not used for symbolic typeout by the DDT
+debugger.  We call this "half killing".  In this example, CHTTYO and A
+both have the value 1, but CHTTYO is half killed, so 1 will always be
+output symbolically as A.  This is the desired result, because
+references to address or AC 1 are more likely to mean A than CHTTYO.
+
+<li>.CALL: This is an ITS symbolic system call.  Its format is, in
+general,
+
+<pre>
+        .CALL [SETZ ? SIXBIT/callname/ ? arguments ((SETZ))]
+</pre>
+
+(Note that the value of SETZ is a word with just the sign bit set).
+The [ ... ] construct is a literal, and "?" is equivalent to a line
+separator.  Thus, the .CALL instruction is assembled with an address
+field that points at a block of words containing a SETZ, a
+SIXBIT/OPEN/, and finally the arguments.  ((SETZ)) is a magic
+assembler incantation which sets the sign bit of the last argument
+word.<p>
+
+The arguments are simply addresses of words containing data for the
+system call.  There are other kinds of arguments, but we won't get
+into that.  See .INFO.;.CALLS &gt; for more information on symbolic
+system calls.<p>
+
+A symbolic system call skips if it is successful.
+
+<li>OPEN: This is the name of the symbolic system call used in the
+example.  The OPEN call is used to open an I/O channel so it can be
+used for I/O.  It requires two arguments: the first one containing the
+channel number and the I/O mode, and the second one containing the
+device name in SIXBIT.  In this example, the channel is CHTTYO, the
+mode is .UAO (unit ascii output), and the device name is TTY, for the
+terminal.<p>
+
+Most OPENs will also specify two filenames and a directory name as
+additional arguments, but for device TTY they are not necessary.
+
+<li>.LOSE %LSFIL: This is a system call which prints an error message
+and halts.  It is designed to be used as the instruction following an
+OPEN or other symbolic system call which deals with an I/O channel.
+Sophisticated programs can recover from failing system calls, and
+sometimes the failure should simply be ignored, but often it is
+easiest just to use .LOSE %LSFIL.  This instruction is indented
+because it can be skipped over.
+
+<li>.IOT: This is the system call for doing actual I/O.  It is an
+instruction whose AC field should be the I/O channel and whose address
+points to a word containing a character to be output.  "F in MIDAS
+represents the code for the character F.
+
+</body></html>

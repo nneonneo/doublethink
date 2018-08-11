@@ -1,0 +1,136 @@
+<html><head>
+<!-- Based on MIT PDP-10 'Info' File by ??? -->
+<!-- This html version Copyright (c) 1995 by Henry G. Baker. -->
+<link rev="made" href="mailto:hbaker@netcom.com">
+<title>PDP-10 Debugging</title></head><body>
+MIT PDP-10 'Info' file converted to Hypertext 'html' format by <a href="ftp://ftp.netcom.com/pub/hb/hbaker/home.html">Henry Baker</a><p>
+
+<a href="BufPadding.html">Previous</a>
+<a href="pdp-10.html">Up</a>
+
+<h1>Debugging Programs with DDT</h1>
+
+When you try your program for the first time, it won't work.<p>
+
+To find out why, you use the debugging features of DDT.  DDT is
+completely documented (*Note DDT: (DDT).) but this is a summary of
+what sorts of things you can do with it.<p>
+
+DDT allows you to set a "breakpoint".  Setting a breakpoint at an
+instruction means that when the program gets to that instruction it
+will stop (return to DDT).  At this time you can examine any location
+in the program to see if everything is working right so far.
+If it is still working right, you can set another breakpoint, later
+on, and continue the program.<p>
+
+When you see that a variable contains a "wrong" value, DDT allows you
+to correct the value and continue, from the breakpoint or from
+someplace else.  You can also change instructions in the program with
+DDT so that you can keep running the program and the problem will not
+happen again (but don't forget to make the correction in the source
+file as well!)  DDT allows can print instructions and addresses using
+the symbols you define in the program, and it understands those
+symbols in your input as well.<p>
+
+You can also ask DDT to run your program one instruction at a time.
+This is often easier than setting breakpoints.<p>
+
+You don't have to do anything special to be able to use DDT on your
+program, because DDT is always available on ITS.  It is the program
+which processed your command to run INFO.  You probably don't want to
+set any breakpoints in INFO, but if you type C-Z now you could do just
+that.<p>
+
+Homework # 1 answer
+<pre>
+        TITLE   IGPAY ATINLAY
+A&lt;-1                                    ;SYMBOLIC AC NAMES ARE DEFINED
+B&lt;-2
+C&lt;-3
+D&lt;-4
+P&lt;-17
+PDLEN&lt;-&lt;-100                            ;LENGTH OF PUSH DOWN LIST
+PDLIST: BLOCK   PDLEN                   ;STORAGE FOR PUSH DOWN LIST
+BUFR:   BLOCK   30                      ;STORAGE FOR 79 CHARACTERS
+
+
+START:  RESET
+        MOVE    P,[IOWD PDLEN,PDLIST]
+L:      OUTCHR  ["*"]                   ;PROMPT FOR INPUT
+        MOVE    B,[POINT 7,BUFR]
+L1:     PUSHJ   P,DOWORD
+        CAIE    A,12                    ;DELIMITER SEEN?
+        JRST    L1
+        OUTSTR  [BYTE(7)15,12]
+        JRST    L
+
+DOWORD: MOVE    B,[POINT 7,BUFR]
+        SETZM   BUFR
+        PUSHJ   P,GETLTR
+        JRST    EPOPJ                   ;NON LETTER
+DOWRD1: PUSHJ   P,ISVOW                 ;IS IT A VOWEL?
+        JRST    .+2
+        JRST    DOWRD3                  ;YES.
+        IDPB    A,B                     ;CONSONANT AT FRONT OF WORD
+        PUSHJ   P,GETLTR
+        TDZA    C,C                     ;"WORD" HAS ALL CONSONANTS
+        JRST    DOWRD1
+        IDPB    C,B                     ;STORE ZERO TO MAKE ASCIZ
+        OUTSTR  BUFR
+EPOPJ:  CAIE    A,12
+        OUTCHR  A                       ;TYPE NON LETTER
+        POPJ    P,
+
+DOWRD2: OUTCHR  A                       ;HERE FOR A WORD THAT BEGINS W/VOWEL
+        PUSHJ   P,GETLTR
+        JRST    EPOPJ
+        JRST    DOWRD2
+
+DOWRD3: LDB     C,[POINT 7,BUFR,6]      ;GET FIRST CONSONANT IF ANY.
+        JUMPE   C,DOWRD2                ;JUMP IF NO FIRST CONSONANT.
+        MOVE    D,A                     ;COPY CASE OF FIRST VOWEL
+        TRNN    C,40                    ;SKIP IF FIRST LETTER IS LOWER CASE
+        TRZ     A,40                    ;MAKE FIRST VOWEL UPPER CASE.
+DOWRD4: OUTCHR  A                       ;OUTPUT FIRST V IN SAME CASE AS FIRST C
+ONS.
+        PUSHJ   P,GETLTR
+        JRST    .+2                     ;END OF WORD
+        JRST    DOWRD4
+        MOVEI   C,"A"
+        IDPB    C,B
+        MOVEI   C,"Y"
+        IDPB    C,B
+        MOVEI   C,0
+        IDPB    C,B
+        TRNN    D,40                    ;WAS FIRST VOWEL IN LOWER CASE?
+        SKIPA   C,[JFCL]
+        MOVE    C,[IORI D,40]           ;YES. FORCE REMAINDER TO LOWERCASE.
+        MOVE    B,[POINT 7,BUFR]
+DOWRD5: ILDB    D,B
+        JUMPE   D,EPOPJ
+        XCT     C
+        OUTCHR  D
+        JRST    DOWRD5
+        
+GETLTR: .IOT    CHTTYI,A        ;Read input character into A.
+        CAIN    A,^M
+         JRST   GETLTR
+        CAIL    A,"A
+         CAILE  A,"Z
+          JRST  .+2
+           JRST CPOPJ1
+        CAIL    A,"A+40
+         CAILE  A,"Z+40
+          POPJ  P,
+CPOPJ1: AOS     (P)                     ;SKIP RETURN, UNLESS LF.
+        POPJ    P,
+
+ISVOW:  IRPC ZZ,,[AEIOUY]
+        CAIE    A,"ZZ
+         CAIN   A,"ZZ+40
+          JRST  CPOPJ1
+TERMIN
+        POPJ    P,
+
+        END     START
+</pre></body></html>

@@ -1,0 +1,102 @@
+<html><head>
+<!-- Based on MIT PDP-10 'Info' File by ??? -->
+<!-- This html version Copyright (c) 1995 by Henry G. Baker. -->
+<link rev="made" href="mailto:hbaker@netcom.com">
+<title>PDP-10 EvenOdd2</title></head><body>
+MIT PDP-10 'Info' file converted to Hypertext 'html' format by <a href="ftp://ftp.netcom.com/pub/hb/hbaker/home.html">Henry Baker</a><p>
+
+<a href="EvenOdd1.html">Previous</a>
+<a href="pdp-10.html">Up</a>
+<a href="Calculator.html">Next</a>
+
+<h1>Alternative Implementation of Previous Example.</h1>
+
+The following program performs the same function as the program written for
+example 5.  Some different ideas are shown here.
+
+<pre>
+        TITLE   EVEN ODD #2
+A=1                                     ;SYMBOLIC AC NAMES ARE DEFINED
+B=2
+C=3
+D=4
+P=17
+
+CHTTYO==1                       ;Channel for output
+CHTTYI==2                       ;Channel for input
+
+PDLLEN==100                     ;Length of push down stack
+PDL:    BLOCK PDLLEN            ;Storage for push down stack
+
+BUF:    BLOCK 30                ;Storage for 79 characters at 5 per word.
+LINBUF: BLOCK 30                ;Read a line into here.
+LINBFE::
+
+START:  MOVE P,[-PDLLEN,,PDL-1]
+                                ;Open TTY channels.
+        .CALL [SETZ ? SIXBIT/OPEN/
+                [.UAI,,CHTTYI] ? [SIXBIT/TTY/] ((SETZ))]
+         .LOSE %LSFIL
+        .CALL [SETZ ? SIXBIT/OPEN/
+                [.UAO,,CHTTYO] ? [SIXBIT/TTY/] ((SETZ))]
+         .LOSE %LSFIL
+L:      PUSHJ P,GETLIN          ;Read in the line.
+        MOVE C,[440700,,LINBUF] ;Initialize byte pointer to fetch from the line
+.
+        MOVE B,[440700,,BUF]    ;Initialize byte pointer to store into BUF.
+        SETZ D,0                ;Low bit of D is even-oddness of character.
+L1:     ILDB A,C                ;Get next character.  Jump if end of line.
+        JUMPE A,L2
+        XORI D,1                ;Complement low bit -- count mod 2.
+                                ;D is 1, then 0, then 1, then 0.
+        XCT XTBL(D)             ;Execute an instruction to dispose of char.
+        JRST L1
+
+XTBL:   .IOT CHTTYO,A           ;Even character         non-vowel
+        IDPB A,B                ;Odd character          vowel
+
+
+L2:     MOVEI A,0               ;Deposit a null byte to make string
+        IDPB A,B                ;   of odd letters ASCIZ.
+        MOVE C,[440700,,BUF]    ;Fetch the string.
+        MOVE B,C                ;Store back only the vowels.
+L3:     ILDB A,C                ;Get one odd letter.
+        JUMPE A,L4              ;Check for end of string.
+        PUSHJ P,ISVOW           ;Test character, skip if vowel.
+         TDZA D,D               ;Not a vowel, set D=0.
+          MOVEI D,1             ;Vowel.  D=-1
+        XCT XTBL(D)             ;Dispose of char depending.
+        JRST L3
+
+L4:     IDPB A,B                ;Store null to make string of odd vowels ASCIZ.
+        MOVEI A,BUF
+        PUSHJ P,OUTSTR          ;Type out that string.
+        MOVEI A,[ASCIZ /
+/]
+        PUSHJ P,OUTSTR
+        JRST L
+
+ISVOW:
+IRPC ZZ,,[AEIOUY]
+        CAIE A,"ZZ
+         CAIN A,"ZZ+40
+          JRST POPJ1
+TERMIN
+        POPJ    P,
+
+;Copy the GETLIN and OUTSTR subroutines from above into here.
+
+        END     START
+</pre>
+
+<h2>NOTES:</h2>
+<ul>
+<li>IRPC is an assembler macro operation which generates repetitive code
+with small variations.  In this case, the three instructions CAIE,
+CAIN and JRST are repeated once for each vowel.  The first time, ZZ is
+replaced by A.  The second, ZZ is replaced by Z.  The sixth time, ZZ
+is replaced by Y.  As a result, the subroutine ISVOW in this example
+is actually identical to the ISVOW in the previous example, though it
+takes much fewer lines of source code.
+</ul>
+</body></html>

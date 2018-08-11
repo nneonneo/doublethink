@@ -1,0 +1,92 @@
+<html><head>
+<!-- Based on MIT PDP-10 'Info' File by ??? -->
+<!-- This html version Copyright (c) 1995 by Henry G. Baker. -->
+<link rev="made" href="mailto:hbaker@netcom.com">
+<title>PDP-10 Fixed-Point</title></head><body>
+MIT PDP-10 'Info' file converted to Hypertext 'html' format by <a href="ftp://ftp.netcom.com/pub/hb/hbaker/home.html">Henry Baker</a><p>
+
+<a href="Arith-Tests.html">Previous</a>
+<a href="pdp-10.html">Up</a>
+<a href="KL-Only.html">Next</a>
+
+<h1>Fixed point arithmetic  ADD, SUB, IMUL, IDIV, MUL, DIV</h1>
+
+In positive numbers bit 0 is zero.  Bits 1 is most significant; bit
+35 is least significant.  Negative numbers are the twos complement of
+postive numbers.  Results (of ADD, SUB or IMUL) outside the range
+-2^|35 to 2^|35-1 will set overflow (PC bit 0).<p>
+
+Each arithmetic instruction has four forms, with modifier characters
+(nothing), M, B and I.<p>
+
+<ul>
+<li>The ordinary form operates on an accumulator and memory,
+  putting the result in the accumulator.
+<li>The Memory form puts the result in the memory location instead.
+  The accumulator is not changed.
+<li>The Both form stores the result in both the accumulator and the memory
+  location.
+<li>The Immediate form uses an accumulator and the effective address,
+  putting the result in the accumulator.
+</ul>
+<pre>
+ADD     C(AC) &lt;- C(AC) + C(E);
+ADDI    C(AC) &lt;- C(AC) + E;
+ADDM    C(E)  &lt;- C(AC) + C(E);
+ADDB    C(AC) &lt;- C(AC) + C(E);  C(E) &lt;- C(AC);
+
+SUB     C(AC) &lt;- C(AC) - C(E);
+SUBI    C(AC) &lt;- C(AC) - E;
+SUBM    C(E)  &lt;- C(AC) - C(E);
+SUBB    C(AC) &lt;- C(AC) - C(E);  C(E) &lt;- C(AC);
+</pre>
+
+The IMUL instructions are for multiplying numbers where the product
+is expected to be representable as one word.
+
+<pre>
+IMUL    C(AC) &lt;- C(AC) * C(E);
+IMULI   C(AC) &lt;- C(AC) * E;
+IMULM   C(E)  &lt;- C(AC) * C(E);
+IMULB   C(AC) &lt;- C(AC) * C(E);  C(E) &lt;- C(AC);
+</pre>
+
+The IDIV instructions are for divisions in which the dividend is a one
+word quantity.  Two consecutive accumulators are used for the results;
+these are AC for the quotient, and AC+1 for the remainder (Actually,
+AC+1 is calculated mod 20, so if AC=17, the remainder is stored in
+accumulator 0.)  If the divisor is zero set overflow and no divide;
+don't change AC or memory operands.  The remainder will have the same
+sign as the dividend.
+
+<pre>
+IDIV    C(AC) &lt;- C(AC) / C(E);  C(AC+1) &lt;- remainder
+IDIVI   C(AC) &lt;- C(AC) / E;  C(AC+1) &lt;- remainder;
+IDIVM   C(E)  &lt;- C(AC) / E;
+IDIVB   C(AC) &lt;- C(AC) / C(E);  C(AC+1) &lt;- remainder; C(E) &lt;- C(AC);
+</pre>
+
+The MUL instructions produce a double word product.  A double word
+integer has 70 bits of significance.  Bit 0 of the high order word is
+the sign bit.  In data, Bit 0 of the low order word is ignored by the
+hardware.  In results, bit 0 of the low word is the same as bit 0 in
+the high word.  MUL will set overflow if both operands are -2^|35.
+
+<pre>
+MUL     C(AC AC+1) &lt;- C(AC) * C(E);
+MULI    C(AC AC+1) &lt;- C(AC) * E;
+MULM    C(E)  &lt;- high word of product of C(AC) * C(E);
+MULB    C(AC AC+1) &lt;- C(AC) * C(E);  C(E) &lt;- C(AC);
+</pre>
+
+The DIV instructions are for divisions in which the dividend is a two
+word quantity (such as produced by MUL).  If C(AC) is greater than the
+memory operand then set overflow and no divide.
+
+<pre>
+DIV     C(AC) &lt;- C(AC AC+1) / C(E); C(AC+1) &lt;- remainder;
+DIVI    C(AC) &lt;- C(AC AC+1) / E;    C(AC+1) &lt;- remainder;
+DIVM    C(E)  &lt;- C(AC AC+1) / E;
+DIVB    C(AC) &lt;- C(AC AC+1) / C(E); C(AC+1) &lt;- remainder;
+          C(E) &lt;- C(AC);
+</pre>

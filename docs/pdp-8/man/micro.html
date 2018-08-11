@@ -1,0 +1,478 @@
+
+
+
+
+
+
+
+
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+
+<HTML LANG="en">
+ <HEAD>
+  <TITLE>PDP-8 Microcoded Instructions</TITLE>
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+  <META name="viewport" content="width=device-width, initial-scale=1">
+  <META name="Author" content="Douglas W. Jones">
+  <META name="Language" content="English">
+  <META name="editor" content="/usr/bin/vi">
+  
+  
+  
+  <STYLE TYPE="text/css">
+   BODY { margin-left: 3%; margin-right: 3%; }
+   H2.SQUAT { margin-top: 0.4em; margin-bottom: 0.25em; }
+   H3.SQUAT { margin-top: 0.3em; margin-bottom: 0.2em; }
+   H4.SQUAT { margin-top: 0.2em; margin-bottom: 0.15em; }
+   H5.SQUAT { margin-top: 0.17em; margin-bottom: 0.15em; }
+   * { line-height: 1.1 }
+   P.SQUAT { margin-top: 0.25em; margin-bottom: 0.15em; }
+   UL.SQUAT { margin-top: 0.25em; margin-bottom: 0.15em; }
+   EM.O { font-style: normal; text-decoration: overline; }
+   EM.U { font-style: normal; text-decoration: underline; }
+   EM.S { font-style: normal; text-decoration: line-through; }
+   A { text-decoration: none; }
+   A.I { font-style: italic; text-decoration: none; }
+   SUP { vertical-align: 0; position: relative; bottom: 1ex; }
+   SUB { vertical-align: 0; position: relative; top: 0.8ex; }
+   TABLE.BOXY { border: 0; padding: 0; border-spacing: 0;
+                border-collapse: collapse; }
+   TD.BOX { border: solid; border-width: thin; border-color: DimGray;
+	      text-align: center; }
+   TD.BOXTT { border: solid; border-width: thin; border-color: DimGray;
+	      font-family: monospace; text-align: center; }
+   TD.TT { font-family: monospace; text-align: left; }
+   TD.TTSPACE { font-family: monospace; text-align: left; color: white }
+   TD.SHADE { background: Silver; text-align: center; }
+   CAPTION { padding-top: 6px; }
+   DIV.HEADBOX { border: groove; border-width: 2px; background: #F0F0E0; padding-top: 1%; padding-bottom: 1%; padding-left: 5px; }
+   DIV.HEADBOX P { margin-top: 0.8em; margin-bottom: 0.8em; }
+   DIV.HEADBOX H1 { margin-top: 0.2em; margin-bottom: 0.4em; }
+   DIV.HEADBOX H2 { margin-top: 0.2em; margin-bottom: 0.4em; }
+   DIV.INDENT { border: none; padding-left: 1em }
+   DIV.INVISIBLE { font-size: 3px; letter-spacing: -5px; color: white; background: white; }
+   DIV.INVISIBLE A:link { color: white; }
+   DIV.INVISIBLE A:visited { color: white; }
+   DIV.INVISIBLE A:active { color: white; }
+   DIV.invisible A:active { color: white; background: white; }
+  </STYLE>
+ </HEAD>
+ <BODY BGCOLOR="#FFFFFF" TEXT="#000000" link="#0000CC" vlink="#880088" alink="#880088">
+  <DIV CLASS=HEADBOX>
+   
+     <IMG SRC="http://www.cs.uiowa.edu/~jones/pdp8/logos/pdp8.gif"
+      HEIGHT="65"
+      WIDTH="65"
+      ALT="(none)"
+      HSPACE="5"
+      ALIGN=left
+     >
+     <IMG SRC="http://www.cs.uiowa.edu/~jones/transpix.gif"
+      ALT=" "
+      WIDTH="75%"
+      HEIGHT="1"
+     >
+    <DIV>
+   
+   <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0"><TR><TD>&nbsp;&nbsp;<TD>
+    
+     <H1>The Digital Equipment Corporation PDP-8</H1>
+    
+    
+     <H2>Microcoded Instructions</H2>
+    
+    <P>
+    
+     Part of <A HREF="index.html">
+      
+      the PDP-8 Programmer's Reference Manual
+      
+     </A>
+     <BR>
+     
+    
+    
+     by
+     <A HREF="http://www.cs.uiowa.edu/~jones/">Douglas W. Jones</A>
+     
+     <BR>
+    
+    
+    <A HREF="http://www.uiowa.edu/">
+     T<SMALL>HE</SMALL> U<SMALL>NIVERSITY</SMALL>
+    <SMALL>OF</SMALL> I<SMALL>OWA</SMALL></A>
+    <A HREF="http://www.cs.uiowa.edu/">Department&nbsp;of&nbsp;Computer&nbsp;Science</A>
+    
+    
+    
+   </TABLE>
+    
+     </DIV>
+    
+  </DIV>
+ 
+
+
+
+<H2>Index</H2>
+<UL>
+<LI><A HREF="micro.html#group1">Group One Microcoded Instructions</A>.
+<BR><A HREF="micro.html#cla">7200 - CLA Clear Accumulator</A>.
+<BR><A HREF="micro.html#cll">7100 - CLL Clear Link</A>.
+<BR><A HREF="micro.html#cma">7040 - CMA Complement Accumulator</A>.
+<BR><A HREF="micro.html#cml">7020 - CML Complement Link</A>.
+<BR><A HREF="micro.html#iac">7001 - IAC Increment Accumulator</A>.
+<BR><A HREF="micro.html#rar">7010 - RAR Rotate Accumulator Right</A>.
+<BR><A HREF="micro.html#ral">7004 - RAL Rotate Accumulator Left</A>.
+<BR><A HREF="micro.html#rar">7012 - RTR Rotate Twice Right</A>.
+<BR><A HREF="micro.html#ral">7006 - RTL Rotate Twice Left</A>.
+<BR><A HREF="micro.html#bsw">7002 - BSW Byte Swap</A>.
+<LI><A HREF="micro.html#group2or">Group Two Microcoded Instructions, Or Group</A>.
+<BR><A HREF="micro.html#sma">7500 - SMA Skip if Minus Accumulator</A>.
+<BR><A HREF="micro.html#sza">7440 - SZA Skip if Zero Accumulator</A>.
+<BR><A HREF="micro.html#snl">7420 - SNL Skip if Nonzero Link</A>.
+<LI><A HREF="micro.html#group2and">Group Two Microcoded Instructions, And Group</A>.
+<BR><A HREF="micro.html#spa">7510 - SPA Skip if Positive Accumulator</A>.
+<BR><A HREF="micro.html#sna">7450 - SNA Skip if Nonzero Accumulator</A>.
+<BR><A HREF="micro.html#szl">7430 - SZL Skip if Zero Link</A>.
+<LI><A HREF="micro.html#group2priv">Privileged Group Two Microcoded Instructions</A>.
+<BR><A HREF="micro.html#osr">7404 - OSR Or Switch Register</A>.
+<BR><A HREF="micro.html#hlt">7402 - HLT Halt</A>.
+<LI><A HREF="micro.html#group3">Group Three Microcoded Instructions</A>.
+<BR><A HREF="micro.html#mqa">7501 - MQA or Multiplier Quotient with Accumulator</A>.
+<BR><A HREF="micro.html#mql">7421 - MQL Multiplier Quotient Load</A>.
+<LI><A HREF="micro.html#macros">Macros</A>
+<BR><A HREF="micro.html#tca">Two's complement accumulator</A>
+<BR><A HREF="micro.html#sle">Skip if Less than or Equal to Zero</A>
+<BR><A HREF="micro.html#sgt">Skip if Greater than Zero</A>
+</UL>
+
+<HR>
+
+<P>
+There are three groups of microcoded instructions on the PDP-8;
+all begin with the opcode 111, and all execute in a single cycle.
+
+<H2><A NAME=group1>Group One Microcoded Instructions</A></H2>
+
+<PRE WIDTH="60">
+            00 01 02 03 04 05 06 07 08 09 10 11
+            ___________________________________
+           | 1| 1| 1| 0|  |  |  |  |  |  |  |  |
+           |__|__|__|__|__|__|__|__|__|__|__|__|
+                       |CLA   CMA   RAR   BSW
+                           CLL   CML   RAL   IAC
+
+                         1  1  2  2  4  4  4  3
+</PRE>
+<P>
+All of the microcoded instructions in group one operate on the
+accumulator and link.  The numbers under the mnemonic for each
+instruction give the order in which they are applied.
+
+<H3><A NAME=cla>7200 - CLA Clear Accumulator</A></H3>
+
+<P>
+<code>CLA</code> sets each of the 12 bits of the accumulator to zero,
+prior to any other microcoded operations.
+
+<H3><A NAME=cll>7100 - CLL Clear Link</A></H3>
+
+<P>
+<code>CLL</code> sets LINK (the link bit) to zero,
+prior to any other microcoded operations.
+
+<H3><A NAME=cma>7040 - CMA Complement Accumulator</A></H3>
+
+<P>
+<code>CMA</code> complements each of the 12 bits of the accumulator.
+If used in conjunction with <code>CLA</code>, this sets all 12 bits of
+the accumulator to one.
+
+<H3><A NAME=cml>7020 - CML Complement Link</A></H3>
+
+<P>
+<code>CML</code> complement LINK (the link bit).  If used in conjunction
+with <code>CLL</code>, this sets the link bit to one.
+
+<H3><A NAME=iac>7001 - IAC Increment Accumulator</A></H3>
+
+<P>
+<code>IAC</code> increments the 13 bit LINK/AC register.  Used
+with <code>CMA</code>, this computes the 2's complement.  Used
+with <code>CLA</code>, this loads the constant 1.
+
+<H3><A NAME=rar>7010 - RAR Rotate Accumulator Right</A></H3>
+
+<P>
+<code>RAR</code> rotates (circularly shifts) the 13 bit LINK/AC
+register one place right, so that the least significant bit of AC
+becomes the new link, and the old link becomes the most significant
+bit of AC.
+
+<P>
+On the PDP-8/I and later models, shift operations are executed
+after all other microcoded operations in.  Prior to the PDP-8/I,
+shift operations were executed at the same time as <code>IAC</code>;
+portable code should assume the latter.
+
+<H3><A NAME=ral>7004 - RAL Rotate Accumulator Left</A></H3>
+
+<P>
+<code>RAL</code> rotates (circularly shifts) the 13 bit LINK/AC
+register one place left, so that the most significant bit of AC
+becomes the new link, and the old link becomes the least significant
+bit of AC.
+
+<P>
+On the PDP-8/I and later models, shift operations are executed
+after all other microcoded operations in.  Prior to the PDP-8/I,
+shift operations were executed at the same time as <code>IAC</code>;
+portable code should assume the latter.
+
+<H3><A NAME=rtr>7012 - RTR Rotate Twice Right</A></H3>
+
+<P>
+<code>RTR</code> is equivalent to two consecutive <code>RAR</code>
+instructions.
+It is encoded by setting the <code>BSW</code> bit, 0002 in addition
+to the <code>RAR</code> bit.
+
+<H3><A NAME=rtl>7006 - RTL Rotate Twice Left</A></H3>
+
+<P>
+<code>RTL</code> is equivalent to two consecutive <code>RAL</code>
+instructions.
+It is encoded by setting the <code>BSW</code> bit, 0002 in addition
+to the <code>RAL</code> bit.
+
+<H3><A NAME=bsw>7002 - BSW Byte Swap</A></H3>
+
+<P>
+<code>BSW</code> exchanges the high 6 bits of AC with the low 6 bits
+of AC, after any clear, complement or increment operations.  This
+operation is only supported by the PDP-8/E and later models.  For this
+reason, it should be avoided in portable code.  Note that microcoding
+<code>BSW</code> with <code>RAR</code> or <code>RAL</code> will produce
+<code>RTR</code> or <code>RTL</code>.
+
+<H2><A NAME=group2or>Group Two Microcoded Instructions, Or Group</A></H2>
+
+<PRE WIDTH="60">
+            00 01 02 03 04 05 06 07 08 09 10 11
+            ___________________________________
+           | 1| 1| 1| 1|  |  |  |  | 0|  |  | 0|
+           |__|__|__|__|__|__|__|__|__|__|__|__|
+                       |CLA   SZA
+                           SMA   SNL
+
+                         2  1  1  1
+
+</PRE>
+Group two microcoded instructions allow conditional tests to be made on
+the LINK/AC.  These are divided into the <I>or group</I> and the
+<I>and group</I>.  In
+the <I>or group</I>, microcoding multiple instructions results in a test
+for the logical <I>or</I> of the indicated conditions.
+
+<H3>7600 - CLA Clear Accumulator</H3>
+
+The accumulator may be cleared after any test performed by a group two
+instruction.  Unless microcoded with other group two instructions, PDP-8
+assemblers generally assume that the <code>CLA</code> mnemonic refers to
+the group one instruction!
+
+<H3><A NAME=sma>7500 - SMA Skip if Minus Accumulator</A></H3>
+
+<code>SMA</code> skips the next instruction (increments the program counter)
+if the accumulator is negative (the sign bit of the accumulator is one).
+
+<H3><A NAME=sza>7440 - SZA Skip if Zero Accumulator</A></H3>
+
+<code>SZA</code> skips the next instruction (increments the program counter)
+if the accumulator is zero (all bits of the accumulator are zero).
+
+<H3><A NAME=snl>7420 - SNL Skip if Nonzero Link</A></H3>
+
+<code>SNL</code> skips the next instruction (increments the program
+counter) if LINK (the link bit) is not zero.
+
+<H2><A NAME=group2and>Group Two Microcoded Instructions, And Group</A></H2>
+
+<PRE WIDTH="60">
+            00 01 02 03 04 05 06 07 08 09 10 11
+            ___________________________________
+           | 1| 1| 1| 1|  |  |  |  | 1|  |  | 0|
+           |__|__|__|__|__|__|__|__|__|__|__|__|
+                       |CLA   SNA
+                           SPA   SZL
+
+                         2  1  1  1
+</PRE>
+Group two microcoded instructions allow conditional tests to be made on
+the LINK/AC.  These are divided into the <I>or group</I> and the
+<I>and group</I>.  In
+the <I>and group</I>, microcoding multiple instructions results in a test
+for the logical <I>and</I> of the indicated conditions.
+
+<H3>7610 - CLA Clear Accumulator</H3>
+
+<P>
+The accumulator may be cleared after any test performed by a group two
+instruction.  Unless microcoded with other group two instructions, PDP-8
+assemblers generally assume that the <code>CLA</code> mnemonic refers to
+the group one instruction!
+
+<H3><A NAME=spa>7510 - SPA Skip if Positive Accumulator</A></H3>
+
+<code>SPA</code> skips the next instruction (increments the program counter)
+if the accumulator is not negative (the sign bit of the accumulator is zero).
+
+<H3><A NAME=sna>7450 - SNA Skip if Nonzero Accumulator</A></H3>
+
+<code>SNA</code> skips the next instruction (increments the program counter)
+if the accumulator is nonzero (any bit of the accumulator nonzero).
+
+<H3><A NAME=szl>7430 - SZL Skip if Zero Link</A></H3>
+
+<code>SZL</code> skips the next instruction (increments the program counter)
+if LINK (the link bit) is zero.
+
+<H2><A NAME=group2priv>Privileged Group Two Microcoded Instructions</A></H2>
+
+<PRE WIDTH="60">
+            00 01 02 03 04 05 06 07 08 09 10 11
+            ___________________________________
+           | 1| 1| 1| 1|  |  |  |  | 1|  |  | 0|
+           |__|__|__|__|__|__|__|__|__|__|__|__|
+                       |               OSR
+                                          HLT
+</PRE>
+The privileged group two microcoded instructions will cause an interrupt
+if they are executed in user mode on a PDP-8 equipped with the time-share
+option (KM8-E or equivalent).  This interrupt is delivered after any skip
+or clear operations that may be microcoded with it, and as a result, the
+interrupt service routine may be unable to determine which instruction
+caused the interrupt; therefore, programs intended to operate compatably
+under time-shared PDP-8 environments should not microcode skip operations
+with these instructions!
+
+<H3><A NAME=osr>7404 - OSR Or Switch Register</A></H3>
+
+<code>OSR</code> ors the contents of the front-panel switch register with
+the contents of the accumulator.  The microcoded combination
+<code>CLA OSR</code> loads the switch register into the accumulator.
+
+<P>
+In time-shared environments, the timesharing monitor typically maintains
+an emulated switch register for each user, and software emulation routines
+called by the time-share interrupt hardware duplicate the <code>OSR</code>
+function using this emulated switch register.
+
+<H3><A NAME=hlt>7402 - HLT Halt</A></H3>
+
+<code>HLT</code> halts the processor after the completion of the current
+instruction.
+
+<P>
+In time-shared environments, the timesharing monitor typically interprets
+a <code>HLT</code> instruction as a request for a return to the command
+language interpreter.
+
+<H2><A NAME=group3>Group Three Microcoded Instructions</A></H2>
+
+<PRE WIDTH="60">
+            00 01 02 03 04 05 06 07 08 09 10 11
+            ___________________________________
+           | 1| 1| 1| 1|  |  |  |  |  |  |  | 1|
+           |__|__|__|__|__|__|__|__|__|__|__|__|
+                       |CLA   SCA   \_    _/
+                       |   MQA   MQL  CODE
+
+                         1* 2  2  2     3
+</PRE>
+On all models of PDP-8 prior to the PDP-8/E, the group three instructions
+were only implemented if the EAE option was present.
+If this option is absent on such machines, all group three instructions
+become no-ops.
+
+<P>
+On the PDP-8/E and following models, <code>CLA</code>, <code>MQA</code>
+and <code>MQL</code> instructions are implemented in the standard CPU,
+while the other operations are implemented in the optional EAE.  Portable
+code should avoid relying on the availability of any of these instructions.
+<P>
+The <code>CODE</code> field and the <code>SCA</code> bit only function if
+the EAE is present; these should be zero unless specific EAE instructions
+are intended.  These are documented elsewhere.
+
+<H3>7601 - CLA Clear Accumulator</H3>
+
+The accumulator may be cleared prior to other group three microcoded
+operations.  Unless microcoded with other group three instructions, PDP-8
+assemblers generally assume that the <code>CLA</code> mnemonic refers to
+the group one instruction!
+
+<H3><A NAME=mqa>7501 - MQA or Multiplier Quotient with Accumulator</A></H3>
+
+<code>MQA</code> ors the contents of the MQ register into AC.  Usually,
+the microcoded combination <code>CLA MQA</code> is used; this first clears
+the accumulator, so the result can be viewed as a load operation.
+
+<H3><A NAME=mql>7421 - MQL Multiplier Quotient Load</A></H3>
+
+<code>MQL</code> loads the contents of the MQ register from AC and then
+clears AC.
+
+<P>
+The microcoded combination <code>CLA MQL</code> first clears AC, so
+the result is to clear both AC and MQ.  Some assemblers supply the
+mnemonic <code>CAM</code> for this combined operation.
+
+<P>
+The microcoded combination <code>MQA MQL</code> swaps the contents of
+AC and MQ.  Some assemblers supply the mnemonic <code>SWP</code> for
+this combined operation.
+
+<H2><A NAME=macros>Macros</A></H2>
+
+<P>
+The PDP-8 instruction set is so small that many operations that are usually
+single instructions on a larger machine must be composed from simpler
+instruction sequences on the PDP-8.  While these are referred to as
+macros here, the
+memory resources of the PDP-8 are limited enough that these are usually
+not coded as given, but rather, carefully folded into other computations.
+
+<H3><A NAME="tca">Two's Complement</A></H3>
+
+<P>
+To two's complement a number, take it's ones complement and then increment.
+<PRE>
+TCA=    CMA IAC
+</PRE>
+<P>
+This is a single microcoded machine instruction, and it is equally common
+to find it written out long-hand or defined as shown here so it can be used
+with a single short mnemonic.
+
+<H3><A NAME="sle">Skip if Less than or Equal to Zero</A></H3>
+<PRE>
+        SMA SZA
+</PRE>
+<P>
+This is a single microcoded instruction from the Group Two Or Group, so in
+one cycle, it skips if the accumulator is negative or zero.
+
+<H3><A NAME="sgt">Skip if Greater than Zero</A></H3>
+<PRE>
+        SPA SNA
+</PRE>
+<P>
+This is a single microcoded instruction from the Group Two And Group, so in
+one cycle, it skips if the accumulator is positive and nonzero.
+
+</BODY>
+</HTML>

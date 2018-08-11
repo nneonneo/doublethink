@@ -1,0 +1,132 @@
+<html><head>
+<!-- Based on MIT PDP-10 'Info' File by ??? -->
+<!-- This html version Copyright (c) 1995 by Henry G. Baker. -->
+<link rev="made" href="mailto:hbaker@netcom.com">
+<title>PDP-10 Half-Word</title></head><body>
+MIT PDP-10 'Info' file converted to Hypertext 'html' format by <a href="ftp://ftp.netcom.com/pub/hb/hbaker/home.html">Henry Baker</a><p>
+
+<a href="Stack.html">Previous</a>
+<a href="pdp-10.html">Up</a>
+<a href="Arith-Tests.html">Next</a>
+
+<h1>Halfword instructions</h1>
+
+The halfword class of instructions perform data transmission between
+one half of an accumulator and one half of a memory location.  There
+are sixty-four halfword instructions.  Each mnemonic begins with H
+and has four modifiers.  The first modifier specifies which half of
+the source word; the second specifies which half of the destination.
+The third modifier specifies what to do to the other half of the
+destination.  The fourth modifier specifies the source of data and
+the destination of the result.
+
+<pre>
+H halfword from |R right  of source to
+                |L left
+
+                |R right  of destination
+                |L left
+
+                |  no modification of other half
+                |Z zero other half
+                |O set other half to ones
+                |E sign extend source to other half
+
+                |  from memory to AC
+                |I Immediate
+                |M from AC to memory
+                |S to self. If AC#0, then move to AC also.
+</pre>
+
+C18 means bit 18 of the contents (the high bit of the low half);
+C0 means bit 0 of the contents (the high bit of the high half);
+E18 means the high bit of the effective address.
+777777*X evaluates to 0 if X is 0, or 777777 (all ones) if X is one.
+Such expressions represent sign extension.
+
+<pre>
+HRR             CR(AC) &lt;- CR(E)
+HRRI            CR(AC) &lt;- E
+HRRM            CR(E)  &lt;- CR(AC)
+HRRS            CR(E)  &lt;- CR(E); if AC#0 then CR(AC) &lt;- CR(E)
+
+HRRZ            C(AC) &lt;- 0,,CR(E)
+HRRZI           C(AC) &lt;- 0,,E
+HRRZM           C(E)  &lt;- 0,,CR(AC)
+HRRZS           C(E)  &lt;- 0,,CR(E); if AC#0 then C(AC) &lt;- 0,,CR(E)
+
+HRRO            C(AC) &lt;- 777777,,CR(E)
+HRROI           C(AC) &lt;- 777777,,E
+HRROM           C(E)  &lt;- 777777,,CR(AC)
+HRROS           C(E)  &lt;- 777777,,CR(E); if AC#0 then C(AC) &lt;- 777777,,CR(E)
+
+HRRE            C(AC) &lt;- 777777*C18(E),,CR(E);
+HRREI           C(AC) &lt;- 777777*E18,,E
+HRREM           C(E)  &lt;- 777777*C18(AC),,CR(AC)
+HRRES           C(E)  &lt;- 777777*C18(E),,CR(E);
+                        if AC#0 then C(AC) &lt;- 777777*C18(E),,CR(E)
+
+HRL             CL(AC) &lt;- CR(E)
+HRLI            CL(AC) &lt;- E
+HRLM            CL(E)  &lt;- CR(AC)
+HRLS            CL(E)  &lt;- CR(E); if AC#0 then CL(AC) &lt;- CR(E)
+
+HRLZ            C(AC) &lt;- CR(E),,0
+HRLZI           C(AC) &lt;- E,,0
+HRLZM           C(E)  &lt;- CR(AC),,0
+HRLZS           C(E)  &lt;- CR(E),,0; if AC#0 then C(AC) &lt;- CR(E),,0
+
+HRLO            C(AC) &lt;- CR(E),,777777
+HRLOI           C(AC) &lt;- E,,777777
+HRLOM           C(E)  &lt;- CR(E),,777777
+HRLOS           C(E)  &lt;- CR(E),,777777; if AC#0 then C(AC) &lt;- CR(E),,777777
+
+HRLE            C(AC) &lt;- CR(E),,777777*C18(E)
+HRLEI           C(AC) &lt;- E,,777777*E18
+HRLEM           C(E)  &lt;- CR(AC),,777777*C18(AC)
+HRLES           C(E)  &lt;- CR(E),,777777*C18(E);
+                        if AC#0 then C(AC) &lt;- CR(E),,777777*C18(E)
+
+HLR             CR(AC) &lt;- CL(E)
+HLRI            CR(AC) &lt;- 0
+HLRM            CR(E)  &lt;- CL(AC)
+HLRS            CR(E)  &lt;- CL(E); if AC#0 then CR(AC) &lt;- CL(E)
+
+HLRZ            C(AC) &lt;- 0,,CL(E)
+HLRZI           C(AC) &lt;- 0
+HLRZM           C(E)  &lt;- 0,,CL(AC)
+HLRZS           C(E)  &lt;- 0,,CL(E); if AC#0 then C(AC) &lt;- 0,,CL(E)
+
+HLRO            C(AC) &lt;- 777777,,CL(E)
+HLROI           C(AC) &lt;- 777777,,0
+HLROM           C(E)  &lt;- 777777,,CL(AC)
+HLROS           C(E)  &lt;- 777777,,CL(E); if AC#0 then C(AC) &lt;- 777777,,CL(E)
+
+HLRE            C(AC) &lt;- 777777*C0(E),,CL(E);
+HLREI           C(AC) &lt;- 0
+HRREM           C(E)  &lt;- 777777*C0(AC),,CL(AC)
+HRRES           C(E)  &lt;- 777777*C0(E),,CL(E);
+                        if AC#0 then C(AC) &lt;- 777777*C0(E),,CR(E)
+
+HLL             CL(AC) &lt;- CL(E)
+HLLI            CL(AC) &lt;- 0
+HLLM            CL(E)  &lt;- CL(AC)
+HLLS            CL(E)  &lt;- CL(E); if AC#0 then CL(AC) &lt;- CL(E)
+
+HLLZ            C(AC) &lt;- CL(E),,0
+HLLZI           C(AC) &lt;- 0
+HLLZM           C(E)  &lt;- CL(AC),,0
+HLLZS           C(E)  &lt;- CL(E),,0; if AC#0 then C(AC) &lt;- CL(E),,0
+
+HLLO            C(AC) &lt;- CL(E),,777777
+HLLOI           C(AC) &lt;- 0,,777777
+HLLOM           C(E)  &lt;- CL(E),,777777
+HLLOS           C(E)  &lt;- CL(E),,777777; if AC#0 then C(AC) &lt;- CL(E),,777777
+
+HLLE            C(AC) &lt;- CL(E),,777777*C0(E)
+HLLEI           C(AC) &lt;- 0
+HLLEM           C(E)  &lt;- CL(AC),,777777*C0(AC)
+HLLES           C(E)  &lt;- CL(E),,777777*C0(E);
+                        if AC#0 then C(AC) &lt;- CL(E),,777777*C0(E)
+</pre>
+</body></html>

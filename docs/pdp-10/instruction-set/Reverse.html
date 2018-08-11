@@ -1,0 +1,96 @@
+<html><head>
+<!-- Based on MIT PDP-10 'Info' File by ??? -->
+<!-- This html version Copyright (c) 1995 by Henry G. Baker. -->
+<link rev="made" href="mailto:hbaker@netcom.com">
+<title>PDP-10 Reverse</title></head><body>
+MIT PDP-10 'Info' file converted to Hypertext 'html' format by <a href="ftp://ftp.netcom.com/pub/hb/hbaker/home.html">Henry Baker</a><p>
+
+<a href="TTY-Output.html">Previous</a>
+<a href="pdp-10.html">Up</a>
+<a href="Even-Odd.html">Next</a>
+
+The following program accepts a line of input (terminated by Carriage
+Return) from the terminal and outputs that line with the characters
+reversed.
+
+<pre>
+        TITLE   REVERSE
+A=1                             ;Symbolic AC names are defined
+P=17
+
+CHTTYO==1                       ;Channel for output
+CHTTYI==2                       ;Channel for input
+
+PDLLEN==100                     ;Length of push down stack
+PDL:    BLOCK   PDLLEN          ;Storage for push down stack
+
+BEG:    MOVE P,[-PDLLEN,,PDL-1] ;Initialize stack pointer.
+                                ;Open TTY channels.
+        .CALL [SETZ ? SIXBIT/OPEN/
+                [.UAI,,CHTTYI] ? [SIXBIT/TTY/] ((SETZ))]
+         .LOSE %LSFIL
+        .CALL [SETZ ? SIXBIT/OPEN/
+                [.UAO,,CHTTYO] ? [SIXBIT/TTY/] ((SETZ))]
+         .LOSE %LSFIL
+LOOP:   .IOT CHTTYO,["*]        ;Prompt for input.
+        PUSHJ P,REVERS          ;do the work, once.
+        .IOT CHTTYO,[^M]        ;Output CRLF to go to new line.
+        .IOT CHTTYO,[^J]
+        JRST LOOP               ;Jump back to repeat.
+
+REVERS: .IOT CHTTYI,A           ;Read a character.
+        CAIN A,^M               ;If it is a Carriage Return, the line is ended,
+         POPJ P,                 ;so return.
+        PUSH P,A                ;Else save this character on the stack,
+        PUSHJ P,REVERS          ;call REVERS recursively,
+        POP P,A                 ;get our character back
+        .IOT CHTTYO,A           ;and print it.
+        POPJ P,                 ;Return.
+
+END BEG
+</pre>
+
+<h2>NOTES:</h2>
+
+<ul>
+<li>OPEN: Two tty channels are used, one for input and one for output.
+The input channel is opened in mode .UAI (unit ascii input) and the
+output channel in mode .UAO (unit ascii output).  The mode is how the
+system knows whether to make an input channel or an output channel.
+
+<li>.IOT: It works on input channels as well as on output channels.
+On an input channel, it stores the input character (or word) in the
+addressed memory location.  The ITS system does not do any sort of
+input editing or "rubout processing".  There is a library for that:
+SYSENG;RUBOUT &gt;.
+
+<li>To output "go to a new line", output a ^M followed by a ^J.  ^M is
+the MIDAS syntax for the code for Control-M, which is Carriage Return.
+When the user types Carriage Return, which echoes as going to a new
+line, it is read by the program as only one character, a ^M.
+
+<li>The subroutine REVERS is recursive.  The first call to REVERS reads
+the first character, calls REVERS (to read the rest of the line and
+print it in reverse), and lastly prints the first character.  Over the
+recursive call to REVERS, the first character is saved on the stack.
+
+<li>P is the conventional name for the AC used as the stack pointer.
+The MOVE instruction is there to set it up with a pointer to the
+allocated area.  Initializing a stack is one of the first things any
+real program should do.<p>
+
+From then on, calling is done with PUSHJ and returning with POPJ.
+PUSH is used to save data on the stack, and POP to get it back.
+
+<li>The POPJ P, which is skipped over by the CAIN is indented one extra
+column.  If there is a sequence of skipping instructions, each
+instruction is indented one more than the previous one.<p>
+
+It is reasonable to omit the address field of an instruction if it is
+unused (as it is in a POPJ).  An omitted field assembles as zero, but
+you should never omit a field which is supposed to contain a zero
+which actually stands for something.  For example, instructions which
+refer to AC zero should always have a zero (or better, a symbolic
+name) where the AC is referred to.
+</ul>
+</body></html>

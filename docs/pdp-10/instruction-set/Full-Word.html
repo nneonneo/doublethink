@@ -1,0 +1,111 @@
+<html><head>
+<!-- Based on MIT PDP-10 'Info' File by ??? -->
+<!-- This html version Copyright (c) 1995 by Henry G. Baker. -->
+<link rev="made" href="mailto:hbaker@netcom.com">
+<title>PDP-10 Full-Word</title></head><body>
+MIT PDP-10 'Info' file converted to Hypertext 'html' format by <a href="ftp://ftp.netcom.com/pub/hb/hbaker/home.html">Henry Baker</a><p>
+
+<a href="Addr-Comp.html">Previous</a>
+<a href="pdp-10.html">Up</a>
+<a href="Stack.html">Next</a>
+
+<h1>Full word instructions.  MOVE, BLT, EXCH, PUSH, POP</h1>
+
+These are the instructions whose basic purpose is to move one or more
+full words of data from one location to another, usualy from an
+accumulator to a memory location or vice versa.  In some cases, minor
+arithmetic operations are performed, such as taking the magnitude or
+negative of a word.<p>
+
+The MOVE class of instructions perform full word data transmission
+between an accumulator and a memory location.  There are sixteen
+instructions in the MOVE class.  All mnemonics begin with MOV.  The
+first modifier specifies a data transformation operation; the second
+modifier specifies the source of data and the destination of the
+result.
+
+<pre>
+        |E no modification      |  from memory to AC
+MOV     |N negate source        |I Immediate.  Move the address to AC.
+        |M magnitude            |M from AC to memory
+        |S swap source          |S to self.  If AC#0, move to AC also
+</pre>
+
+"Magnitude" means that the absolute value of the input quantity is
+what is stored in the output.<p>
+"Swap Source" means that the right and left halves of the input
+quantity are interchanged before storing into the output.<p>
+
+In a "to self" instruction, the input value (negated, swapped, or the
+magnitude, if appropriate) is stored back into the memory location; if
+the AC field is nonzero, the value is stored in the AC as well.
+
+<pre>
+MOVE                    C(AC) &lt;- C(E)
+MOVEI                   C(AC) &lt;- 0,,E
+MOVEM                   C(E)  &lt;- C(AC)
+MOVES                   C(E)  &lt;- C(E); if AC#0 then C(AC) &lt;- C(E)
+
+MOVN                    C(AC) &lt;- -C(E)
+MOVNI                   C(AC) &lt;- -E
+MOVNM                   C(E)  &lt;- -C(AC)
+MOVNS                   C(E)  &lt;- -C(E); if AC#0 then C(AC) &lt;- -C(E)
+
+MOVM                    C(AC) &lt;- |C(E)|
+MOVMI                   C(AC) &lt;- 0,,E
+MOVMM                   C(E)  &lt;- |C(AC)|
+MOVMS                   C(E)  &lt;- |C(E)|; if AC#0 then C(AC) &lt;- |C(E)|
+
+MOVS                    C(AC) &lt;- CS(E)
+MOVSI                   C(AC) &lt;- E,,0
+MOVSM                   C(E)  &lt;- CS(AC)
+MOVSS                   C(E)  &lt;- CS(E); if AC#0 then C(AC) &lt;- CS(E)
+</pre>
+
+
+
+EXCH exchanges the contents of the selected ac with the contents of
+the effective address.
+
+<pre>
+EXCH    C(AC)&gt;&lt;C(E)
+</pre>
+
+The BLT (Block Transfer) instruction copies words from memory to memory.
+The left half of the selected AC specifies the first source address.
+The right half of the AC specifies the first destination address.
+The effective address specifies the last destination address.  Words
+are copied, one by one, from the source to the destination, until a
+word is stored in an address greater than or equal to the effective
+address of the BLT.<p>
+
+Caution: BLT clobbers the specified AC.  Don't use the BLT AC in
+address calculation for the BLT; results will be random.  If source
+and destination overlap, remember that BLT moves the lowest source
+word first.  If the destination of the BLT includes the BLT AC, then
+the BLT AC better be the last destination address.<p>
+
+Programming examples:
+<pre>
+;Save all the accumulators:
+        MOVEM   17,SAVAC+17
+        MOVEI   17,SAVAC        ;Source is 0, destination is SAVAC
+        BLT     17,SAVAC+16
+
+
+;Restore all the accumulators:
+        MOVSI   17,SAVAC        ;Source is SAVAC, destination is 0
+        BLT     17,17
+
+;Zero 100 words starting at TABLE.
+        SETZM   TABLE
+        MOVE    AC,[TABLE,,TABLE+1]     ;Source and destination overlap
+        BLT     AC,TABLE+77
+
+;Move 77 words from TABLE thru TABLE+76 to TABLE+1 thru TABLE+77: BLT
+;can't be done here because the source and destination overlap.  (See
+;the description of POP, *Note POP: Stack.)
+        MOVE    AC,[400076,,TABLE+76]
+        POP     AC,1(AC)        ;Store TABLE+76 into TABLE+77, etc.
+        JUMPL   AC,.-1
+</pre></body></html>

@@ -1,0 +1,536 @@
+
+
+
+
+
+
+
+
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+
+<HTML LANG="en">
+ <HEAD>
+  <TITLE>PDP-8 Card Reader Instructions</TITLE>
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+  <META name="viewport" content="width=device-width, initial-scale=1">
+  <META name="Author" content="Douglas W. Jones">
+  <META name="Language" content="English">
+  <META name="editor" content="/usr/bin/vi">
+  
+  
+  
+  <STYLE TYPE="text/css">
+   BODY { margin-left: 3%; margin-right: 3%; }
+   H2.SQUAT { margin-top: 0.4em; margin-bottom: 0.25em; }
+   H3.SQUAT { margin-top: 0.3em; margin-bottom: 0.2em; }
+   H4.SQUAT { margin-top: 0.2em; margin-bottom: 0.15em; }
+   H5.SQUAT { margin-top: 0.17em; margin-bottom: 0.15em; }
+   * { line-height: 1.1 }
+   P.SQUAT { margin-top: 0.25em; margin-bottom: 0.15em; }
+   UL.SQUAT { margin-top: 0.25em; margin-bottom: 0.15em; }
+   EM.O { font-style: normal; text-decoration: overline; }
+   EM.U { font-style: normal; text-decoration: underline; }
+   EM.S { font-style: normal; text-decoration: line-through; }
+   A { text-decoration: none; }
+   A.I { font-style: italic; text-decoration: none; }
+   SUP { vertical-align: 0; position: relative; bottom: 1ex; }
+   SUB { vertical-align: 0; position: relative; top: 0.8ex; }
+   TABLE.BOXY { border: 0; padding: 0; border-spacing: 0;
+                border-collapse: collapse; }
+   TD.BOX { border: solid; border-width: thin; border-color: DimGray;
+	      text-align: center; }
+   TD.BOXTT { border: solid; border-width: thin; border-color: DimGray;
+	      font-family: monospace; text-align: center; }
+   TD.TT { font-family: monospace; text-align: left; }
+   TD.TTSPACE { font-family: monospace; text-align: left; color: white }
+   TD.SHADE { background: Silver; text-align: center; }
+   CAPTION { padding-top: 6px; }
+   DIV.HEADBOX { border: groove; border-width: 2px; background: #F0F0E0; padding-top: 1%; padding-bottom: 1%; padding-left: 5px; }
+   DIV.HEADBOX P { margin-top: 0.8em; margin-bottom: 0.8em; }
+   DIV.HEADBOX H1 { margin-top: 0.2em; margin-bottom: 0.4em; }
+   DIV.HEADBOX H2 { margin-top: 0.2em; margin-bottom: 0.4em; }
+   DIV.INDENT { border: none; padding-left: 1em }
+   DIV.INVISIBLE { font-size: 3px; letter-spacing: -5px; color: white; background: white; }
+   DIV.INVISIBLE A:link { color: white; }
+   DIV.INVISIBLE A:visited { color: white; }
+   DIV.INVISIBLE A:active { color: white; }
+   DIV.invisible A:active { color: white; background: white; }
+  </STYLE>
+ </HEAD>
+ <BODY BGCOLOR="#FFFFFF" TEXT="#000000" link="#0000CC" vlink="#880088" alink="#880088">
+  <DIV CLASS=HEADBOX>
+   
+     <IMG SRC="http://www.cs.uiowa.edu/~jones/pdp8/logos/pdp8.gif"
+      HEIGHT="65"
+      WIDTH="65"
+      ALT="(none)"
+      HSPACE="5"
+      ALIGN=left
+     >
+     <IMG SRC="http://www.cs.uiowa.edu/~jones/transpix.gif"
+      ALT=" "
+      WIDTH="75%"
+      HEIGHT="1"
+     >
+    <DIV>
+   
+   <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0"><TR><TD>&nbsp;&nbsp;<TD>
+    
+     <H1>The Digital Equipment Corporation PDP-8</H1>
+    
+    
+     <H2>Card Reader Instructions</H2>
+    
+    <P>
+    
+     Part of <A HREF="index.html">
+      
+      the PDP-8 Programmer's Reference Manual
+      
+     </A>
+     <BR>
+     
+    
+    
+     by
+     <A HREF="http://www.cs.uiowa.edu/~jones/">Douglas W. Jones</A>
+     
+     <BR>
+    
+    
+    <A HREF="http://www.uiowa.edu/">
+     T<SMALL>HE</SMALL> U<SMALL>NIVERSITY</SMALL>
+    <SMALL>OF</SMALL> I<SMALL>OWA</SMALL></A>
+    <A HREF="http://www.cs.uiowa.edu/">Department&nbsp;of&nbsp;Computer&nbsp;Science</A>
+    
+    
+    
+   </TABLE>
+    
+     </DIV>
+    
+  </DIV>
+ 
+
+
+
+<P>
+This document describes the CR8E/CR8F (M843) card reader interface
+of the PDP-8/E, 8/F, 8/M and 8/A, as well as earlier models such as the CR8I
+and CR8L.  The type 451 card reader control for the classic-8 was not
+compatable with this!
+
+<H2>Index</H2>
+<UL>
+<LI><A HREF="card.html#registers">Device Registers</A>.
+<LI><A HREF="card.html#format">Instruction Format</A>.
+<LI>Instructions (device x)
+<BR><A HREF="card.html#rcsf">6631 - RCSF Read Card Skip on data ready Flag</A>.
+<BR><A HREF="card.html#rcra">6632 - RCRA Read Card Read Alphanumeric</A>.
+<BR><A HREF="card.html#rcrb">6634 - RCRB Read Card Read Binary</A>.
+<BR><A HREF="card.html#rcno">6635 - RCNO Read Conditions Out to card reader</A>.
+<BR><A HREF="card.html#rcrc">6636 - RCRC Read Card Read Compressed</A>.
+<BR><A HREF="card.html#rcni">6637 - RCNI Read Conditions In from card reader</A>.
+<BR><A HREF="card.html#rcsd">6671 - RCSD Read Card Skip if Done</A>.
+<BR><A HREF="card.html#rcse">6672 - RCSE Read Card start and Skip if ready</A>.
+<BR><A HREF="card.html#rcrd">6674 - RCRD Read Card Reset Done</A>.
+<BR><A HREF="card.html#rcsi">6675 - RCSI Read Card Skip if Interrupt</A>.
+<BR><A HREF="card.html#rctf">6677 - RCTF Reader Clear Transition Flags</A>.
+<LI><A HREF="card.html#conventions">programming conventions</A>.
+</UL>
+
+<HR>
+
+<H2><A NAME=registers>Device Registers</A></H2>
+
+<H3>Reader Buffer</H3>
+
+<PRE WIDTH="60">
+            12 11 10  1  2  3  4  5  6  7  8  9
+            ___________________________________
+           |  |  |  |  |  |  |  |  |  |  |  |  |
+           |__|__|__|__|__|__|__|__|__|__|__|__|
+           |        |                          |
+           |  Zone  |          Numeic          |
+           |  Punch |           Punch          |
+</PRE>
+The reader buffer register holds the column most recently read from the
+card.  The bit positions in this buffer are labeled with the conventional
+row numbers used on all
+<A HREF="http://www.cs.uiowa.edu/~jones/cards/">
+Hollerith format punched cards.</A>
+These are conventionally grouped as zone punches and numeric punches, and all
+variations of the 12 column Hollerith system are upwards compatable from
+the following basic character set:
+<DL>
+<DT> No punch - space
+<DD>
+<P>
+<DT> No zone punch - numeric
+<DD> A numeric punch in rows 1 to 9 codes that numeric digit.
+<P>
+<DT> Zone 12 punch - alphabetic A-I
+<DD> A numeric punch in rows 1 to 9 codes a letter from A to I.
+<P>
+<DT> Zone 11 punch - alphabetic J-R
+<DD> A numeric punch in rows 1 to 9 codes a letter from J to R.
+<P>
+<DT> Zone 10 punch - alphabetic S-Z
+<DD> A numeric punch in rows 2 to 9 codes a letter from S to Z.
+<P>
+<DT> Zone 10 punch - no numeric punch
+<DD> This exception codes the digit zero.  For this reason, zone punch 10
+is sometimes also considered to be numeric punch zero.
+</DL>
+Beyond this basic framework, Hollerith codes have varied immensely over the
+years!
+
+<H3>Condition Register</H3>
+
+<PRE WIDTH="60">
+            00 01 02 03 04 05 06 07 08 09 10 11
+            ___________________________________
+           |  |  |  |  |  |  |  |  |  |  |  |  |
+           |__|__|__|__|__|__|__|__|__|__|__|__|
+           |           |                       |
+           |DR CD TT RT|         unused        |
+</PRE>
+This register contains the flags indicating the card reader condition.
+These are:
+<DL>
+<DT> DR - Data Ready
+<DD> Set when one column is read into the reader buffer.  The data in the
+reader buffer will remain valid for at least 1 millisecond after data
+ready becomes true.  (For the CR8L and CR8I interfaces, the data remains
+valid for 1.4 milliseconds.)  The hardware does not detect overrun errors,
+but by counting the number of characters read per card, they can be detected
+by software.
+<P>
+<DT> CD - Card Done
+<DD> Set when the end of a card is sensed.
+<P>
+<DT> TT - Trouble Transition
+<DD> Set when the reader status goes from ready to not-ready, for example,
+because the reader is not turned on, or
+because of a jam, full output hopper, or empty input hopper.
+<P>
+<DT> RT - Ready Transition
+<DD> Set when the reader status goes from not-ready to ready.
+</DL>
+At most one of the transition flags will be set at any time, indicating
+the current reader status and the fact that the status has changed
+since the last status reset.  The transition flags are not present in
+the CR8I or CR8L card reader interfaces.
+Initialization resets all condition flags.
+
+<H3>Interrupt Enable</H3>
+
+<PRE WIDTH="60">
+            00 01 02 03 04 05 06 07 08 09 10 11
+            ___________________________________
+           |  |  |  |  |  |  |  |  |  |  |  |  |
+           |__|__|__|__|__|__|__|__|__|__|__|__|
+           |                             |     |
+           |           unused            |TE DE|
+</PRE>
+This register contains two interrupt enable bits.
+These are:
+<DL>
+<DT> TE - Transition Enable
+<DD> If set, enables interrupt requests when either the Ready Tranasition or
+the Trouble Transition flag is set.
+<P>
+<DT> DE - Data Enable
+<DD> If set enables interrupt requests when either the Data Ready or
+the Card Done flag is set.
+</DL>
+These enable flipflops are not present in the CR8I and CR8L reader interfaces.
+Power-on initialization resets the Ready Enable bit and sets
+the Data Enable bit.
+
+<H2><A NAME=format>Instruction Format</A></H2>
+
+<PRE WIDTH="60">
+            00 01 02 03 04 05 06 07 08 09 10 11
+            ___________________________________
+           | 1| 1| 0| 1| 1| 0| x| 1| 1|  |  |  |
+           |__|__|__|__|__|__|__|__|__|__|__|__|
+           |        |                 |        |
+           |  IOT   |      Device     |   Op   |
+</PRE>
+The card reader teletype is always connected as devices 63 and 67; this gives
+the potential for 16 operations, not all of which are decoded.
+
+<H2>Input Instructions</H2>
+
+<H3><A NAME=rcsf>6631 - RCSF</A> Read Card Skip on data ready Flag </H3>
+
+<PRE WIDTH="60">
+	RCSF
+</PRE>
+Skip the next instruction if the data ready flag is set.
+All applicable PDP-8 card reader interfaces support this operation.
+
+<H3><A NAME=rcra>6632 - RCRA</A> Read Card Read Alphanumeric </H3>
+
+<PRE WIDTH="60">
+	RCRA
+</PRE>
+The contents of the reader buffer are transferred to the accumulator, after
+translation to a
+<A HREF="http://www.cs.uiowa.edu/~jones/cards/codes.html#BCD">6-bit (BCD)
+code.</A>
+Errors in translating from the 12-bit card code to the 6-bit code are not
+reported! The data ready bit is cleared by this instruciton.
+All applicable PDP-8 card reader interfaces support this operation.
+<P>
+The documentation of the particular 6-bit code used is very unclear, and
+the tables in different versions of the Small Computer Handbook differ in
+the details they give!  The original 1965
+<I>PDP-8 User's Handbook</I> gives a 6-bit code that is essentially the
+same as IBM 1401 BCD, The 1973 <I>Small Computer Handbook</I> erroniously
+gives 6-bit truncated ASCII.  In fact, all applicable interfaces used
+the following 6-bit code, a code which is correctly documented in the
+<I>PDP-8/I -8/L Small Computer Handbook</I>, 1972 revision:
+<PRE>
+            00 01 02 03 04 05 06 07 08 09 10 11
+            ___________________________________
+           | 0| 0| 0| 0| 0| 0|  |  |  |  |  |  |
+           |__|__|__|__|__|__|__|__|__|__|__|__|
+           |                 |     |           |
+           |     Unused      |Zone |  Number   |
+
+	Zone = zone punch used
+		00 -- none
+		01 -- 10
+		10 -- 11
+		11 -- 12
+	Number = BCD code for numeric punch used
+		0000 -- none	1000 -- 8
+		0001 -- 1       1001 -- 9
+		0010 -- 2       1010 -- 8-2
+		0011 -- 3       1011 -- 8-3
+		0100 -- 4       1100 -- 8-4
+		0101 -- 5       1101 -- 8-5
+		0110 -- 6       1110 -- 8-6
+		0111 -- 7       1111 -- 8-7
+</PRE>
+The BCD code is produced using 6 or-gates, as follows
+<PRE>
+	Bit 6  = or( punches 12, 11 )
+	Bit 7  = or( punches 12, 10 )
+	Bit 8  = or( punches 8, 9 )
+	Bit 9  = or( punches 4, 5, 6, 7 )
+	Bit 10 = or( punches 2, 3, 6, 7 )
+	Bit 11 = or( punches 1, 3, 5, 7, 9 )
+</PRE>
+
+<H3><A NAME=rcrb>6634 - RCRB</A> Read Card Read Binary </H3>
+
+<PRE WIDTH="60">
+	RCRB
+</PRE>
+The contents of the reader buffer are transferred to the accumulator, as a
+literal uninterpreted 12-bit quantity, with Row 12 in the most significant
+bit.  The data ready bit is cleared by this instruciton.
+All applicable PDP-8 card reader interfaces support this operation.
+<P>
+
+<H3><A NAME=rcno>6635 - RCNO</A> Read Conditions Out to card reader </H3>
+
+<PRE WIDTH="60">
+	RCNO
+</PRE>
+The accumulator is transferred to the interrupt enable register.  If one
+of the flags is set, this may cause an interrupt.
+This instruction is not supported on the CR8I and CR8L interfaces,
+where interrupts were always enabled unless globally disabled.
+<P>
+
+<H3><A NAME=rcrc>6636 - RCRC</A> Read Card Read Compressed </H3>
+
+<PRE WIDTH="60">
+	RCRC
+</PRE>
+The contents of the reader buffer are transferred to the accumulator, after
+translation to an 8-bit (extended BCD) code.  Errors in translating from
+the 12-bit card code to the 8-bit code are reported by setting the sign bit!
+The data ready bit is cleared by this instruciton.
+This instruction is not supported on the CR8I and CR8L interfaces.
+The 8 bit code is as follows:
+<PRE>
+            00 01 02 03 04 05 06 07 08 09 10 11
+            ___________________________________
+           |  | 0| 0| 0|  |  |  |  |  |  |  |  |
+           |__|__|__|__|__|__|__|__|__|__|__|__|
+           |  |        |  |        |  |        |
+           |ER| Unused |R9|  Zone  |R8|  R1-7  |
+
+	ER   = error report
+	R9   = row 9
+	Zone = the zone field, uninterpreted
+	R8   = row 8
+	R1-7 = binary code for rows 1-7
+		000 -- none	100 -- 4
+		001 -- 1	101 -- 5
+		010 -- 2	110 -- 6
+		011 -- 3	111 -- 7
+</PRE>
+The binary code is produced using 3 or-gates, as follows
+<PRE>
+	Bit 9  = or( punches 4, 5, 6, 7 )
+	Bit 10 = or( punches 2, 3, 6, 7 )
+	Bit 11 = or( punches 1, 3, 5, 7 )
+</PRE>
+The error report is set if more than one punch was present
+in rows 1 to 7.
+<P>
+Compressed mode was included on the CR8E interface in order to support extended
+card codes that allowed for full support of
+<A HREF="http://www.cs.uiowa.edu/~jones/cards/codes.html#EBCDIC">EBCDIC</A>,
+including lower case.  Although IBM did introduce a keypunch that supported
+these extensions, they were not supported by the last IBM keypunch to attain
+widespread use, the 029.
+<P>
+
+<H3><A NAME=rcni>6637 - RCNI</A> Read Conditions In from card reader </H3>
+
+<PRE WIDTH="60">
+	RCNI
+</PRE>
+The condition register is read into the accumulator.
+This instruction is not supported on the CR8/I and CR8/L interfaces.
+<P>
+
+<H3><A NAME=rcsd>6671 - RCSD</A> Read Card Skip if Done </H3>
+
+<PRE WIDTH="60">
+	RCSD
+</PRE>
+If the card done flag is set, skip the next instruction.
+All applicable PDP-8 card reader interfaces support this operation.
+<P>
+
+<H3><A NAME=rcse>6672 - RCSE</A> Read Card start and Skip if ready</H3>
+
+<PRE WIDTH="60">
+	RCSE
+</PRE>
+If the card reader is not ready, for example, because it is turned off,
+no cards are available to be read, or it is jammed, this instruction
+does nothing.  If the card reader is ready, this instruction starts one
+card into motion, clears the card-done flag and skips the next instruction.
+All applicable PDP-8 card reader interfaces support this operation.
+<P>
+
+<H3><A NAME=rcrd>6674 - RCRD</A> Read Card Reset Done </H3>
+
+<PRE WIDTH="60">
+	RCRD
+</PRE>
+Reset the done flag.
+All applicable PDP-8 card reader interfaces support this operation.
+<P>
+
+<H3><A NAME=rcsi>6675 - RCSI</A> Read Card Skip if Interrupt </H3>
+
+<PRE WIDTH="60">
+	RCSI
+</PRE>
+If the card reader is currently requesting an interrupt -- that is, if one
+of the flags in the condition register is set and the corresponding interrupt
+enable bit is also set, the next instruction is skipped.
+This instruction is not supported on the CR8/I and CR8/L interfaces.
+<P>
+
+<H3><A NAME=rctf>6677 - RCTF</A> Reader Clear Transition Flags </H3>
+
+<PRE WIDTH="60">
+	RCTF
+</PRE>
+The transition flags (trouble and ready) are reset.
+This instruction is not supported on the CR8/I and CR8/L interfaces.
+<P>
+
+<H2><A NAME=conventions>Programming Conventions</A></H2>
+
+Typical PDP-8 assembly language programs begin by defining the necessary
+IOT instructions.  In the case of the card reader interface, most PDP-8
+assemblers did not predefine these symbols, so programmers had to define
+them as follows:
+<PRE>
+	RCSF=	6631	/ Read Card Skip on data ready Flag
+	RCRA=	6632	/ Read Card Read Alphanumeric
+	RCRB=	6634	/ Read Card Read Binary
+	RCSD=	6671	/ Read Conditions Out to card reader
+	RCSE=	6672	/ Read Card start and Skip if ready
+	RCRD=	6674	/ Read Card Reset Done
+</PRE>
+<P>
+Given these definitions, the following routine reads one card image into an
+80 word buffer each time it is called, translating the columns to ASCII
+without checking for invalid card codes:
+<PRE>
+	RCARD,	.-.		/Read card
+	/			  wipes out X1, TMP
+	/			  returns AC = 0
+	/			  takes buffer addr inline
+	/			  on error, no skip
+	/			  on success, skip
+		CLA CMA
+		TAD I	RCARD	/ get parameter minus 1
+		DCA     X0	/ setup for auto increment
+		ISZ	RCARD	/ advance over parameter
+		RCSE		/ start reading card
+		JMP I	RCARD   /   error return
+	RCNEXT, RCSF		/ check for column ready
+		JMP	RCEND	/   if not, go test done
+		RCRA		/ get one column
+		TAD	(RCTAB) / convert to address
+		DCA	TMP	/
+		TAD I	TMP	/ get TAB(column)
+		DCA I	X0	/ store in buffer
+	RCEND,  RDSD		/ see of card done
+		JMP	RCNEXT	/   get next column if not
+		RCRD		/ reset done (be polite!)
+		ISZ	RCARD	/ prepare for normal return
+		JMP I	RCARD	/ return
+</PRE>
+This code depends on a 64 word translation table to convert between the 6 bit
+code returned by the RCRA instruction and ASCII.  The following table
+handles the conversion for cards punched with an
+<A HREF="http://www.cs.uiowa.edu/~jones/cards/codes.html#029">IBM 029
+keypunch</A>:
+<PRE>
+						/zone numeric
+	RCTAB,	" ;"1;"2;"3;"4;"5;"6;"7;"8;"9	/      x - 9
+	      	":;"#;"@;"';"=;""		/     8, 2 - 7
+		"0;"/;"S;"T;"U;"V;"W;"X;"Y;"Z	/ 10   x - 9
+	      	"];",;"%;"_;"&gt;;"?		/ 10  8, 2 - 7
+		"-;"J;"K;"L;"M;"N;"O;"P;"Q;"R	/ 11   x - 9
+	      	"!;"$;"*;");";;"/		/ 11  8, 2 - 7
+		"&amp;;"A;"B;"C;"D;"E;"F;"G;"H;"I	/ 12   x - 9
+	      	"[;".;"&lt;;"(;"+;"^		/ 12  8, 2 - 7
+</PRE>
+It is worth noting that the the 8-bit codes returned by the RCRC
+instruction can be converted to the 6-bit format returned by the RCRA
+instruction as follows (the conversion is shown in pseudo C syntax):
+<PRE>
+	6bit = (  (8bit &amp; 0077)
+	       | ((8bit &amp; 0200) &gt;&gt; 4)
+	       | ((8bit &amp; 0100) &gt;&gt; 2)
+	       | ((8bit &amp; 0100) &gt;&gt; 1)
+</PRE>
+A robust card input routine would do two things that are not covered
+by the above code.  First, it would count columns, verifying that exactly
+80 columns of data are read per card.  Second, it would verify that the
+data in each column represented a valid character.  The latter is most
+easily done by verifying that only one zone punch is present in rows
+10, 11 and 12, and that the number of numeric punches is never greater
+than two, and if equal to two, one of those punches is in column 8 and
+the other is in columns 2 to 7.
+
+</BODY>
+</HTML>

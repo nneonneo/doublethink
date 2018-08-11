@@ -1,0 +1,159 @@
+<html><head>
+<!-- Based on MIT PDP-10 'Info' File by ??? -->
+<!-- This html version Copyright (c) 1995 by Henry G. Baker. -->
+<link rev="made" href="mailto:hbaker@netcom.com">
+<title>PDP-10 Even-Odd</title></head><body>
+MIT PDP-10 'Info' file converted to Hypertext 'html' format by <a href="ftp://ftp.netcom.com/pub/hb/hbaker/home.html">Henry Baker</a><p>
+
+<a href="Reverse.html">Previous</a>
+<a href="pdp-10.html">Up</a>
+<a href="EvenOdd1.html">Next</a>
+
+<h1>Separate Even-Numbered and Odd-Numbered Characters.  Rubout Processing.</h1>
+
+The following program accepts a line of input (terminated by carriage return)
+from the terminal and outputs the even (i.e., every second) letters followed
+by the odd letters.  Also, we exhibit a subroutine for reading a line from the
+terminal with rubout processing.
+
+<pre>
+        TITLE   EVEN ODD
+A=1                             ;Symbolic AC names are defined.
+B=2
+P=17
+
+CHTTYO==1                       ;Channel for output
+CHTTYI==2                       ;Channel for input
+
+PDLLEN==100                     ;Length of push down stack
+PDL:    BLOCK PDLLEN            ;Storage for push down stack
+
+BUF:    BLOCK 30                ;Storage for 79 characters at 5 per word.
+LINBUF: BLOCK 30
+LINBFE::
+
+START:  MOVE P,[-PDLLEN,,PDL-1]
+                                ;Open TTY channels.
+        .CALL [SETZ ? SIXBIT/OPEN/
+                [.UAI,,CHTTYI] ? [SIXBIT/TTY/] ((SETZ))]
+         .LOSE %LSFIL
+        .CALL [SETZ ? SIXBIT/OPEN/
+                [.UAO,,CHTTYO] ? [SIXBIT/TTY/] ((SETZ))]
+         .LOSE %LSFIL
+L:      PUSHJ P,GETLIN          ;Read in an entire line.
+        MOVE C,[440700,,LINBUF] ;Initialize byte pointer to fetch from the line
+.
+        MOVE B,[440700,,BUF]    ;Initialize byte pointer to store into BUF.
+;Get odd-numbered character.
+L1:     ILDB A,C                ;Get next odd-numbered char of the line.
+        JUMPE A,L2              ;Zero byte =&gt; end of line.
+        IDPB A,B                ;Store char in BUF.  Advance pointer first.
+;Get even-numbered character.
+        ILDB A,C                ;Get next even-numbered char of the line.
+        JUMPE A,L2              ;Zero byte =&gt; end of line.
+        .IOT CHTTYO,A           ;Output this character right away.
+        JRST L1                 ;Keep going till we get a terminator.
+
+L2:     MOVEI A,0               ;Store a terminating character (code zero)
+        IDPB A,B                ;at the end of the string in BUF.
+                                ;Now it is an ASCIZ string.
+        MOVEI A,BUF
+        PUSHJ P,OUTSTR          ;Call OUTSTR to output ASCIZ string
+                                ;starting at address in A.
+        MOVEI A,[ASCIZ /
+/]
+        PUSHJ P,OUTSTR          ;Output a CRLF.
+        JRST L
+
+;Subroutine to read in a line and store it in LINBUF,
+;checking to avoid running past the end of LINBUF.
+;Discards the line terminator and leaves a null (zero) character
+;in the buffer at the end of the string.
+;Rubout cancels one character.
+;Clobbers A and B.
+GETLIN: .IOT CHTTYO,["*]        ;Prompt for input.
+        MOVE B,[440700,,LINBUF]
+GETLI1: .IOT CHTTYI,A           ;Read the character
+        CAIN A,177              ;Rubout means cancel one character.
+         JRST GETLRB
+        CAIN A,^M               ;Carriage Return ends the line.
+         JRST GETLCR
+        CAME B,[100700,,LINBFE-1]       ;Don't store if buffer almost full.
+                                        ;(Leaves room for one more char:
+                                        ; the zero at the end)
+         IDPB A,B               ;Any other character is stored in the buffer.
+        JRST GETLI1
+
+;Come here after reading the carriage return.
+GETLCR: SETZ A,                 ;Store a zero to mark end of string - and make
+it ASCIZ.
+        IDPB A,B
+        POPJ P,
+
+;Come here after reading a rubout.
+GETLRB: CAMN B,[440700,,LINBUF] ;Is there anything to rub out?
+         JRST GETLNL
+        LDB A,B                 ;Yes =&gt; get back the char we are cancelling
+        .IOT CHTTYO,A           ;and print it out so user can see it.
+        ADD B,[070000,,]        ;To discard char, decrement the byte pointer.
+                                ;First increase position by one byte (7).
+        SKIPGE B                ;If byte pointer negative, position is 44,
+         SUB B,[430000,,1]      ;so change it to position 01 in previous word.
+        JRST GETLI1
+
+;Come here after reading a rubout with nothing to rub out.
+GETLNL: MOVEI A,[ASCIZ /
+/]
+        PUSHJ P,OUTSTR          ;Just output a blank line.
+        JRST GETLIN             ;Prompt again.
+
+;Subroutine to output the ASCIZ string which starts
+;in the word whose address is inA.  Clobbers A.
+OUTSTR: HRLI A,440700           ;Make A into a byte pointer to fetch string.
+OUTST1: ILDB B,A                ;Fetch next character of string into B.
+        JUMPE B,CPOPJ           ;If it is the terminator, return.
+        .IOT CHTTYO,B           ;Else output it
+        JRST OUTST1             ;and loop back.
+
+CPOPJ:  POPJ P,                 ;Return.
+
+        END     START
+</pre>
+
+<h2>NOTES:</h2>
+
+<ul>
+
+<li>"LINBFE::" defines the label LINBFE and half kills it.  This is because
+LINBFE and START are actually the same location; we would prefer to
+have DDT print out START, so we tell it not to print out LINBFE.
+
+<li>440700: The correct left half for a byte pointer for 7-bit bytes
+which points to the nonexistent character to the left of a word.  The
+first increment will make it point to the first actual character in
+the word.  This is the right way to start off the pointer because the
+ILDB and IDPB instructions increment first.
+
+<li>Decrementing a byte pointer: This is done in GETLRB.  It is the
+inverse of incrementing the byte pointer, as done by IBP, ILDB and IDPB.
+The particular three-instruction sequence used above assumes that the
+byte size is 7.  It is not hard to adapt it to other byte sizes, but sizes
+other than 7 are infrequent.
+
+<li>GETLIN: This subroutine does "rubout processing".  It gives the
+user the ability to type in a line and make corrections within it.
+This is a very simple rubout processor; the only editing character
+it provides is Rubout, and it does not handle display terminals.
+SYSENG;RUBOUT &gt; is a rubout processor that you can use in practice.
+
+<li>OUTSTR: A subroutine to print out an ASCIZ (ASCII, terminated by
+a Zero) string.  Most programs contain this subroutine under some name
+or other.
+
+<li>CPOPJ: Note that it is possible to conditionaly jump to a POPJ
+instruction to do a conditional return from a subroutine.  Every
+subroutine in the program can use the same POPJ instruction for this,
+and the traditional name for it is CPOPJ.  You can assume when you see
+the label CPOPJ used that it is the address of a POPJ P, instruction.
+
+</ul></body></html>

@@ -1,0 +1,65 @@
+<html><head>
+<!-- Based on MIT PDP-10 'Info' File by ??? -->
+<!-- This html version Copyright (c) 1995 by Henry G. Baker. -->
+<link rev="made" href="mailto:hbaker@netcom.com">
+<title>PDP-10</title></head><body>
+MIT PDP-10 'Info' file converted to Hypertext 'html' format by <a href="ftp://ftp.netcom.com/pub/hb/hbaker/home.html">Henry Baker</a><p>
+
+<a href="Intro.html">Next</a>
+
+<h1>PDP-10 Machine Language.</h1>
+
+This file attempts to teach the machine language of the PDP-10 computer.  It
+describes what instructions are available and what they do.  The conventions
+of the assembler in which PDP-10 machine programs are usually written are
+another subject; see *Note MIDAS: (MIDAS).<p>
+
+The machine language itself:
+
+<ul>
+
+<li><a href="Intro.html">Introduction</a></li>
+<li><a href="Memory.html">Addressing memory.  Formats of memory words.</a>
+<li><a href="IFormat.html">General instruction formats.</a>
+<li><a href="Terms.html">Terminology.</a>
+<li><a href="Addr-Comp.html">Effective address computation.</a>
+<li><a href="Full-Word.html">Full word data transfer instructions</a>
+<li><a href="Stack.html">Stack instructions.</a>
+<li><a href="Half-Word.html">Half word data transfer instructions.</a>
+<li><a href="Arith-Tests.html">Conditional jumps on signs and comparisons.</a>
+<li><a href="Fixed-Point.html">Fixed point arithmetic operations.</a>
+<li><a href="KL-Only.html">KL-10 double precision fixed point.</a>
+<li><a href="Floating-Point.html">Floating point arithmetic operations.</a>
+<li><a href="Shifting.html">Shift and rotate instructions.</a>
+<li><a href="Byte.html">Byte extraction instructions.</a>
+<li><a href="Logical-Tests.html">Conditional skip on bit test instructions.</a>
+<li><a href="Boolean.html">Bitwise logical operations.</a>
+<li><a href="PC-Format.html">Format of PC saved by subroutine calls.</a>
+<li><a href="Jumps.html">Jumps other than arithmetic conditionals.</a>
+<li><a href="Obsolete.html">Obsolete subroutine call instructions.</a>
+
+</ul><p>
+
+Program examples:
+
+<ul>
+<li><a href="Program.html">Complete simple program.</a>
+<li><a href="TTY-Output.html">Simple terminal output.</a>
+<li><a href="Reverse.html">Simple terminal input and output.</a>
+<li><a href="Even-Odd.html">Read a line, separate even- and odd-numbered chars.</a>
+<li><a href="EvenOdd1.html">Separates vowels from consonants too.</a>
+<li><a href="EvenOdd2.html">Another way of writing the previous example.</a>
+<li><a href="Calculator.html">Reads arithmetic expressions, prints results.</a>
+<li><a href="FileIO.html">Reading and writing files.</a>
+<li><a href="Parsing.html">Converting input to SIXBIT, or to filenames.</a>
+<li><a href="BufInput.html">Buffered input from files.</a>
+<li><a href="BufPadding.html">Buffered input, discarding padding at end of file.</a>
+</ul><p>
+
+I haven't got the time to test these examples.  That means they may have bugs.
+Sorry.  But it's a useful exercise to test one and, if it doesn't work, fix it
+and tell BUG-INFO.
+
+<ul>
+<li><a href="Debugging.html">Using DDT to debug programs or try out instructions.</a>
+</ul>

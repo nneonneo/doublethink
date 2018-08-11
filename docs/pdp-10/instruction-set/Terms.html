@@ -1,0 +1,61 @@
+<html><head>
+<!-- Based on MIT PDP-10 'Info' File by ??? -->
+<!-- This html version Copyright (c) 1995 by Henry G. Baker. -->
+<link rev="made" href="mailto:hbaker@netcom.com">
+<title>PDP-10 Terms</title></head><body>
+MIT PDP-10 'Info' file converted to Hypertext 'html' format by <a href="ftp://ftp.netcom.com/pub/hb/hbaker/home.html">Henry Baker</a><p>
+
+<a href="IFormat.html">Previous</a>
+<a href="pdp-10.html">Up</a>
+<a href="Addr-Comp.html">Next</a>
+
+<h1>Terminology</h1>
+
+Symbols particular to this file:
+
+<ul>
+<li>#  means "not equal".
+<li>&lt;= means "less than or equal".
+<li>&gt;= means "greater than or equal".
+<li>&lt;- means "is assigned the new value".
+</ul>
+
+<ul>
+<li>AC means the contents of the AC field of the current instruction;
+  this is a number from 0 to 17.
+<li>E means the value of the effective address of the current instruction.
+  *Note Addr: Addr-Comp, for how this is computed.
+<li>PC means the address from which the next instruction will be fetched.
+<li>C(...) surrounding an expression refers to the contents of the memory
+  location whose address is the value of the expression.
+  Thus, C(AC) is the contents of the accumulator which the
+  instruction refers to, and C(E) is the contents of the memory
+  location which the instruction refers to.
+<li>CR(...) means the right half, only, of the contents.
+<li>CS(...) means the contents, wit the two halves swapped.
+<li>CL(...) means the left half, only, of the contents.
+</ul>
+
+Symbols which are taken from assembler language:
+
+<ul>
+
+<li>x,,y means a word whose left half contains x, and whose right half
+  contains y.  This is similar to x*1000000+y, except that x,,y
+  truncates y, using only the low 18 bits of it.
+
+<li>&lt;...&gt; surrounding an expression serves the same purpose
+  as parentheses in algebra.  Thus, 5*&lt;1,,1&gt; equals 5,,5.
+
+<li>[...] surrounding an expression means the address of a word
+  in memory which contains the specified expression.
+  Thus, [2] means the address of a word containing 2.
+  This is called a literal.  The address could turn out to
+  be anything at all, but the proper ways to use literals are
+  such that only the contents matter.
+
+<li>(...) surrounding an expression exchanges the halves of that
+  expression.  Thus, (3,,4) equals 4,,3.
+
+</ul>
+</body></html>

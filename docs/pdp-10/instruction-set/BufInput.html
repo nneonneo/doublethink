@@ -1,0 +1,87 @@
+<html><head>
+<!-- Based on MIT PDP-10 'Info' File by ??? -->
+<!-- This html version Copyright (c) 1995 by Henry G. Baker. -->
+<link rev="made" href="mailto:hbaker@netcom.com">
+<title>PDP-10 BufInput</title></head><body>
+MIT PDP-10 'Info' file converted to Hypertext 'html' format by <a href="ftp://ftp.netcom.com/pub/hb/hbaker/home.html">Henry Baker</a><p>
+
+<a href="Parsing.html">Previous</a>
+<a href="pdp-10.html">Up</a>
+<a href="BufPadding.html">Next</a>
+
+<h1>Sample Routine to do Buffered Input.</h1>
+
+So far, the i/o in the examples has always transferred a single character at a
+time.  When a large file is to be read or written, it is worth while to go to
+the extra trouble of transferring many words or characters at a time.  There ar
+e
+two ways of doing this.  The old way is to open the i/o channel in "block" mode
+instead of "unit" mode: use mode .BAI, .BAO, .BII or .BIO instead of .UAI, .UAO
+,
+.UII or .UIO.  Then the .IOT UUO itself transfers a block of consecutive words
+instead of a single word or character.  The newer way is to open the channel in
+unit mode as usual, and use the system call SIOT to transfer any number of
+consecutive bytes.  SIOT can be interspersed with individual .IOTs.<p>
+
+We assume that INCHAN has a file open in mode .UAI, unit ascii input.
+We use the SIOT system call to read many characters at a time into a
+buffer, and then get them out of the buffer one by one.<p>
+
+SIOT expects three arguments: a channel number, a byte pointer and a number of
+characters.  The byte pointer argument should not be a literal, because the
+SIOT increments it past the characters that are transferred.  The count is
+also modified; it is decremented for all the characters transferred
+(decremented down to zero if the transfer is completed).  On input, if end of
+file is encountered before the requested number of characters is obtained,
+then the byte pointer and count indicate the characters actually transferred.
+
+<pre>
+INBFR:  BLOCK INBFL             ;This is the buffer.  40 to 200 is
+                                ;good for INBFL (160. to 640. characters).
+
+INCNT:  0                       ;Number of characters left in buffer
+                                ;not fetched yet.
+INPTR:  0                       ;Byte pointer used for fetching characters
+
+;Read another input character into A.
+;Skip if successful.  No skip if EOF.
+GETCHR: SOSL INCNT              ;Anything left in the buffer?
+         JRST GETCH1
+        PUSH P,A                ;No - must read another load.
+        PUSH P,B
+        MOVE A,[440700,,INBFR]
+        MOVEM A,INPTR
+        MOVEI B,INBFL*5
+        ;; Do the input.  A says where to put it and B says how many chars.
+        .CALL [ SETZ ? SIXBIT /SIOT/ ? %CLIMM,,INCHAN
+                        A ? 400000,,B]
+                                ;Note "immediate" argument:
+                                ;%CLIMM,,INCHAN is the same as [INCHAN].
+         .LOSE %LSFIL
+        MOVNS B                 ;B is left with number of characters
+        ADDI B,INBFL*5          ;We wanted but didn't get.
+        MOVEM B,INCNT           ;Compute how many chars we did get.
+        POP P,B
+        POP P,A
+        SOSG INCNT              ;If we got none, it's eof.
+         POPJ P,
+GETCH1: ILDB A,INPTR
+        AOS (P)
+        POPJ P,
+</pre>
+
+Note that this GETCHR routine is completely equivalent to
+
+<pre>
+GETCHR: .IOT INCHAN,A
+        SKIPGE A
+         AOS (P)
+        POPJ P,
+</pre>
+
+but the buffered one is much faster because it does not have to do a
+system call for each character.  If your program is supposed to
+process characters quickly, use buffered input.  If characters will be
+read only infrequently and a few at a time, use simple input.
+
+</body></html>

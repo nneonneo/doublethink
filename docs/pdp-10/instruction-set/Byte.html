@@ -1,0 +1,87 @@
+<html><head>
+<!-- Based on MIT PDP-10 'Info' File by ??? -->
+<!-- This html version Copyright (c) 1995 by Henry G. Baker. -->
+<link rev="made" href="mailto:hbaker@netcom.com">
+<title>PDP-10 Byte</title></head><body>
+MIT PDP-10 'Info' file converted to Hypertext 'html' format by <a href="ftp://ftp.netcom.com/pub/hb/hbaker/home.html">Henry Baker</a><p>
+
+<a href="Shifting.html">Previous</a>
+<a href="pdp-10.html">Up</a>
+<a href="Logical-Tests.html">Next</a>
+
+<h1>Byte instructions</h1>
+
+In the PDP-10 a "byte" is some number of contiguous bits within one
+word.  A byte pointer is a quantity (which occupies a whole word)
+which describes the location of a byte.  There are three parts to the
+description of a byte: the word (i.e., address) in which the byte
+occurs, the position of the byte within the word, and the length of
+the byte.<p>
+
+A byte pointer has the following format:
+
+<pre>
+ 000000 000011 1 1 1111 112222222222333333
+ 012345 678901 2 3 4567 890123456789012345
+ _________________________________________
+|      |      | | |    |                  |
+| POS  | SIZE |U|I| X  |        Y         |
+|______|______|_|_|____|__________________|
+</pre>
+
+POS is the byte position: the number of bits from the right end of
+the byte to the right end of the word.<p>
+
+SIZE is the byte size in bits.<p>
+
+The U field is ignored by the byte instructions.<p>
+
+The I, X and Y fields are used, just as in an instruction, to compute
+an effective address which specifies the location of the word
+containing the byte.<p>
+
+Here are the byte instructions.
+
+<ul>
+
+<li>LDB - Load byte.  The contents of the effective address of the LDB
+instruction is interpreted as a byte pointer.  The byte described
+there is loaded, right adjusted, into the AC.  The rest of the AC is
+cleared.
+
+<li>DPB - Deposit byte.  The contents of the effective address of the DPB
+instruction is interpreted as a byte pointer.  The byte described
+there is deposited from the byte of the same size at the right end of
+the AC.  AC and the remainder of the word into which the byte is
+deposited are left unchanged.
+
+<li>IBP - Increment byte pointer.  The purpose of this instruction is to
+advance a byte pointer to point at the next consecutive byte.  The AC
+field must be zero.  The contents of the effective address are
+fetched.  The POS field is changed by subtracting the size field from
+it.  If the result of the subtraction is greater than or equal to
+zero, store the difference in the POS field.  If the difference is
+negative, add 1 to the Y field (in the KA10 and PDP-6 if Y contains
+777777 then this will carry into the X field; in the KI10 and KL10 the
+carry out is suppressed) and set POS field to 44-SIZE (44 is octal).
+The effect of this is to modify the byte pointer to address the next
+byte (of the same size) that follows the byte addressed by the
+original pointer.
+
+<li>ILDB - Increment and Load Byte.  Increment the byte pointer contained
+at the effective address.  Then perform a LDB function using
+the updated byte pointer.
+
+<li>IDPB - Increment and Deposit Byte.  Increment the byte pointer contained
+at the effective address.  Then perform a DPB function using
+the updated byte pointer.
+
+</ul>
+
+Text strings are typically stored using seven-bit bytes, five per
+word.  ILDB and IDPB can then be used to step through a string.  The
+byte pointer should be initialized to 440700,,&lt;address of string&gt;.
+Then the first ILDB will increment it to point at the first character
+of the string.
+
+</body></html>

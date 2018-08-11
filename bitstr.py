@@ -10,3 +10,7 @@ class BitString(list):
         if not all(v is None or v == value[i] for i,v in enumerate(self[pos:pos+size])):
             raise ValueError("attempted write to position %d of %s already has value %s" % (pos, value, self[pos:pos+size]))
         self[pos:pos+size] = value
+
+    @staticmethod
+    def repr(bs):
+        return ''.join('z' if v is None else v for v in bs)

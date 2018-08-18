@@ -52,12 +52,12 @@ bs.write_safe(0x87*8, None, bytes_to_bits('\xe8' + struct.pack('<I', 0x480)))
 bs.write_safe((0x87+0x480+0x5)*8, None, bytes_to_bits(open('shellcode.amd64', 'rb').read()))
 
 # jmp for clemency
-bs.write_safe(0x0b*9, 9, 0b100000001)
-bs.write_safe(0x0c*9, 9, 0b110000000)
-bs.write_safe(0x0d*9, 9, 0x031)
+bs.write_safe(0x08*9, 9, 0b100000001)
+bs.write_safe(0x09*9, 9, 0b110000000)
+bs.write_safe(0x0a*9, 9, 0x031)
 
 # clemency
-bs.write_safe((((0x1 << 9) | 0x31) + 0xb) * 9, None, bytes_to_bits(open('shellcode.clemency', 'rb').read()))
+bs.write_safe((((0x1 << 9) | 0x31) + 0x8) * 9, None, bytes_to_bits(open('shellcode.clemency', 'rb').read()))
 
 # program for PDP-10
 pdp10.build_prog(bs, 36*(01212-64))
